@@ -155,25 +155,54 @@
         }, 1000);
 
         function showBoosts() {
-            const choice = confirm(`SHOP:\n1. Multi-tap (Cost: 500) - current: ${tapPower}\n2. Auto-Bot (Cost: 1000)\n3. Max Energy (Cost: 500)`);
-            if(choice) {
-                tg.showPopup({
-                    title: 'Zenith Shop',
-                    message: 'Select what to upgrade',
-                    buttons: [
-                        {id: 'pow', type: 'default', text: 'Multi-tap (500)'},
-                        {id: 'auto', type: 'default', text: 'Auto-Bot (1000)'},
-                        {id: 'en', type: 'default', text: 'Energy Cap (500)'},
-                        {type: 'cancel'}
-                    ]
-                }, (id) => {
-                    if(id === 'pow' && balance >= 500) { balance -= 500; tapPower += 1; }
-                    if(id === 'auto' && balance >= 1000) { balance -= 1000; autoRate += 1; }
-                    if(id === 'en' && balance >= 500) { balance -= 500; maxEnergy += 500; energy = maxEnergy; }
-                    updateUI();
-                });
+    // Сразу вызываем официальное окно Telegram без лишних вопросов
+    tg.showPopup({
+        title: 'ZENITH SHOP 🚀',
+        message: `Your Balance: ${Math.floor(balance)} $ZNT\n\nUpgrade your power:`,
+        buttons: [
+            {id: 'pow', type: 'default', text: 'Multi-tap (500 $ZNT)'},
+            {id: 'en', type: 'default', text: 'Energy Cap (500 $ZNT)'},
+            {id: 'auto', type: 'default', text: 'Auto-Bot (1000 $ZNT)'},
+            {type: 'cancel', text: 'Close'}
+        ]
+    }, function(buttonId) {
+        // Логика покупок
+        if (buttonId === 'pow') {
+            if (balance >= 500) {
+                balance -= 500;
+                tapPower += 1;
+                tg.showAlert("Success! Multi-tap upgraded!");
+            } else {
+                tg.showAlert("Not enough $ZNT!");
             }
         }
+        
+        if (buttonId === 'en') {
+            if (balance >= 500) {
+                balance -= 500;
+                maxEnergy += 500;
+                energy = maxEnergy;
+                tg.showAlert("Success! Energy increased!");
+            } else {
+                tg.showAlert("Not enough $ZNT!");
+            }
+        }
+
+        if (buttonId === 'auto') {
+            if (balance >= 1000) {
+                balance -= 1000;
+                autoRate += 1;
+                tg.showAlert("Success! Auto-Bot deployed!");
+            } else {
+                tg.showAlert("Not enough $ZNT!");
+            }
+        }
+        
+        updateUI(); // Обновляем экран после покупки
+    });
+}
+
+        
 
         function showAnim(x, y) {
             const el = document.createElement('div');
