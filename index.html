@@ -3,37 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Zenith Clicker</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --blue: #00f3ff; --purp: #9d00ff; --bg: #020205; --card: rgba(255,255,255,0.05); }
+        :root { --blue: #00f3ff; --purp: #9d00ff; --bg: #020205; --card: rgba(255,255,255,0.05); --gold: #ffd700; }
         body { background: var(--bg); color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; height: 100vh; margin: 0; overflow: hidden; justify-content: space-between; padding: 20px 0 90px 0; box-sizing: border-box; }
         
-        /* Глобальный счетчик - ТЕПЕРЬ НЕ ПЕРЕКРЫВАЕТ ЭКРАН */
-        .global-supply { width: 90%; padding: 10px; border-radius: 10px; background: rgba(255,0,0,0.1); border: 1px solid rgba(255,69,69,0.3); font-size: 10px; display: flex; justify-content: space-between; margin-bottom: 10px; }
+        /* Сверху: Глобальный запас */
+        .global-supply { width: 90%; padding: 10px; border-radius: 12px; background: rgba(255,0,0,0.1); border: 1px solid rgba(255,69,69,0.3); font-size: 11px; display: flex; justify-content: space-between; margin-bottom: 5px; box-sizing: border-box; }
 
-        /* League & Score */
+        /* Прогресс лиги */
         .league-info { width: 90%; text-align: center; }
-        #league-name { font-weight: bold; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
+        #league-name { font-weight: bold; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; color: var(--blue); }
         .league-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
         #league-fill { width: 0%; height: 100%; background: var(--blue); transition: 0.5s; }
-        #score { font-size: 50px; font-weight: 900; text-shadow: 0 0 20px var(--blue); margin: 10px 0; }
 
-        /* Main Button */
-        #main-btn { width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, var(--blue) 0%, transparent 70%); border: 4px solid var(--blue); display: flex; align-items: center; justify-content: center; font-size: 100px; touch-action: manipulation; transition: transform 0.05s; z-index: 1; -webkit-tap-highlight-color: transparent; outline: none; }
-        #main-btn:active { transform: scale(0.92); }
+        /* Баланс */
+        #score { font-size: 56px; font-weight: 900; text-shadow: 0 0 20px var(--blue); margin: 10px 0; }
 
-        /* Overlays */
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 2, 5, 0.98); z-index: 1000; display: none; flex-direction: column; align-items: center; padding-top: 50px; overflow-y: auto; padding-bottom: 100px; }
-        .section-header { font-size: 26px; color: var(--blue); margin-bottom: 25px; font-weight: bold; }
-        .card { background: var(--card); border: 1px solid rgba(0,243,255,0.2); width: 90%; padding: 15px; border-radius: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
-        .btn-act { background: var(--blue); color: #000; border: none; padding: 10px 15px; border-radius: 10px; font-weight: 900; }
-        
-        /* Navigation */
-        .nav { position: fixed; bottom: 0; width: 100%; height: 85px; display: flex; justify-content: space-around; background: #0a0a0f; border-top: 1px solid rgba(0,243,255,0.3); z-index: 10; }
-        .nav-item { background: none; border: none; color: #555; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; font-size: 11px; outline: none; }
+        /* Главная кнопка */
+        #main-btn { width: 230px; height: 230px; border-radius: 50%; background: radial-gradient(circle, var(--blue) 0%, transparent 75%); border: 4px solid var(--blue); display: flex; align-items: center; justify-content: center; font-size: 110px; font-weight: 900; touch-action: manipulation; transition: all 0.1s; z-index: 1; -webkit-tap-highlight-color: transparent; outline: none; box-shadow: 0 0 15px rgba(0,243,255,0.2); }
+        #main-btn:active { transform: scale(0.94); }
+
+        /* Энергия */
+        .energy-box { width: 85%; }
+        .en-bar-bg { width: 100%; height: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; border: 1px solid rgba(0,243,255,0.2); overflow: hidden; }
+        #en-fill { width: 100%; height: 100%; background: linear-gradient(90deg, var(--blue), var(--purp)); transition: 0.2s; }
+
+        /* Оверлеи (Меню) */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 2, 5, 0.98); z-index: 1000; display: none; flex-direction: column; align-items: center; padding-top: 60px; box-sizing: border-box; }
+        .section-header { font-size: 28px; color: var(--blue); margin-bottom: 30px; font-weight: bold; letter-spacing: 2px; }
+        .card { background: var(--card); border: 1px solid rgba(0,243,255,0.2); width: 90%; padding: 18px; border-radius: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
+        .card-info div { font-weight: bold; font-size: 16px; margin-bottom: 4px; }
+        .card-info span { font-size: 12px; color: #888; }
+        .btn-act { background: var(--blue); color: #000; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 900; font-size: 14px; }
+        .btn-act:active { opacity: 0.8; }
+
+        /* Навигация */
+        .nav { position: fixed; bottom: 0; width: 100%; height: 85px; display: flex; justify-content: space-around; background: #0a0a0f; border-top: 1px solid rgba(0,243,255,0.3); z-index: 2000; }
+        .nav-item { background: none; border: none; color: #555; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; font-size: 11px; font-weight: bold; gap: 5px; outline: none; }
         .nav-item.active { color: var(--blue); }
+        .nav-item span { font-size: 18px; }
 
-        .tap-anim { position: absolute; color: white; font-weight: bold; animation: fly 0.6s forwards; pointer-events: none; font-size: 38px; z-index: 2000; }
+        /* Анимация клика */
+        .tap-anim { position: absolute; color: white; font-weight: bold; animation: fly 0.6s ease-out forwards; pointer-events: none; font-size: 40px; z-index: 3000; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
         @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
     </style>
 </head>
@@ -50,147 +63,51 @@
     </div>
 
     <div id="score">0</div>
+    
     <button id="main-btn">Z</button>
 
-    <div style="width: 85%;">
-        <div class="league-bar" style="height: 10px;"><div id="en-fill" style="width: 100%; height: 100%; background: var(--blue);"></div></div>
-        <div style="text-align:center; margin-top:5px; font-size: 12px;">⚡ <span id="en-val">1000</span> / <span id="en-max">1000</span></div>
-    </div>
-
-    <div id="tasks-ui" class="overlay">
-        <div class="section-header">TASKS</div>
-        <div class="card"><div>Подпишись на Forum<br><small>+10,000 $ZNT</small></div><button class="btn-act" onclick="doTask('sub', 10000)">GO</button></div>
-        <button onclick="closeAll()" style="color:red; background:none; border:none; margin-top:20px;">ЗАКРЫТЬ</button>
+    <div class="energy-box">
+        <div class="en-bar-bg"><div id="en-fill"></div></div>
+        <div style="text-align:center; margin-top:8px; font-size: 13px;">⚡ <span id="en-val">1000</span> / <span id="en-max">1000</span></div>
     </div>
 
     <div id="shop-ui" class="overlay">
         <div class="section-header">BOOSTS</div>
-        <div class="card"><div>Multi-tap<br><small id="p-lvl">Lvl 1</small></div><button class="btn-act" onclick="buy('pow')"><span id="p-cost">500</span></button></div>
-        <div class="card"><div>Auto-Bot<br><small id="b-lvl">Lvl 0</small></div><button class="btn-act" onclick="buy('bot')"><span id="b-cost">1000</span></button></div>
-        <button onclick="closeAll()" style="color:red; background:none; border:none; margin-top:20px;">ЗАКРЫТЬ</button>
+        <div class="card">
+            <div class="card-info"><div>Multi-tap</div><span id="p-lvl">Lvl 1</span></div>
+            <button class="btn-act" onclick="buy('pow')"><span id="p-cost">500</span></button>
+        </div>
+        <div class="card">
+            <div class="card-info"><div>Auto-Bot</div><span id="b-lvl">Lvl 0</span></div>
+            <button class="btn-act" onclick="buy('bot')"><span id="b-cost">1000</span></button>
+        </div>
+        <button onclick="closeAll()" style="color:#ff4545; background:none; border:none; margin-top:30px; font-weight:bold;">ЗАКРЫТЬ</button>
+    </div>
+
+    <div id="tasks-ui" class="overlay">
+        <div class="section-header">TASKS</div>
+        <div class="card">
+            <div class="card-info"><div>Zenith Forum</div><span>+10,000 $ZNT</span></div>
+            <button id="task-btn" class="btn-act" onclick="doTask('sub', 10000)">GO</button>
+        </div>
+        <button onclick="closeAll()" style="color:#ff4545; background:none; border:none; margin-top:30px; font-weight:bold;">ЗАКРЫТЬ</button>
     </div>
 
     <div id="daily-ui" class="overlay">
-        <div class="section-header">БОНУС</div>
+        <div class="section-header">DAILY REWARD</div>
         <div id="daily-days" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 90%;"></div>
-        <button class="btn-act" style="margin-top:20px; width:80%;" onclick="claimDaily()">ЗАБРАТЬ</button>
+        <button class="btn-act" style="margin-top:40px; width:80%;" onclick="claimDaily()">ЗАБРАТЬ МОНЕТЫ</button>
     </div>
 
     <div class="nav">
-        <button class="nav-item active" id="n-mine" onclick="closeAll()">💰<br>MINE</button>
-        <button class="nav-item" id="n-shop" onclick="openUI('shop-ui', 'n-shop')">🚀<br>BOOSTS</button>
-        <button class="nav-item" id="n-tasks" onclick="openUI('tasks-ui', 'n-tasks')">📋<br>TASKS</button>
-        <button class="nav-item" id="n-friends" onclick="openUI('friends-ui', 'n-friends')">👥<br>FRIENDS</button>
+        <button class="nav-item active" id="n-mine" onclick="closeAll()"><span>💰</span>MINE</button>
+        <button class="nav-item" id="n-shop" onclick="openUI('shop-ui', 'n-shop')"><span>🚀</span>BOOSTS</button>
+        <button class="nav-item" id="n-tasks" onclick="openUI('tasks-ui', 'n-tasks')"><span>📋</span>TASKS</button>
+        <button class="nav-item" id="n-friends" onclick="tg.showAlert('Система друзей в разработке!')"><span>👥</span>FRIENDS</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let bal = parseFloat(localStorage.getItem('z12_bal')) || 0;
-        let en = parseFloat(localStorage.getItem('z12_en')) || 1000;
-        let m_en = 1000;
-        let pow = parseInt(localStorage.getItem('z12_pow')) || 1;
-        let bot = parseFloat(localStorage.getItem('z12_bot')) || 0;
-        let lastClaim = localStorage.getItem('z12_last_claim') || 0;
-        let streak = parseInt(localStorage.getItem('z12_streak')) || 0;
-        let doneTasks = JSON.parse(localStorage.getItem('z12_tasks') || '[]');
-
-        function refresh() {
-            document.getElementById('score').innerText = Math.floor(bal).toLocaleString();
-            document.getElementById('en-val').innerText = Math.floor(en);
-            document.getElementById('en-fill').style.width = (en/m_en*100) + "%";
-            
-            // Supply
-            let remaining = 1000000000 - (bal * 1500); 
-            document.getElementById('supply-val').innerText = Math.max(0, remaining).toLocaleString() + " $ZNT";
-
-            // Shop
-            document.getElementById('p-cost').innerText = pow * 500;
-            document.getElementById('p-lvl').innerText = "Lvl " + pow;
-            document.getElementById('b-lvl').innerText = "Lvl " + (bot*2);
-
-            localStorage.setItem('z12_bal', bal);
-            localStorage.setItem('z12_en', en);
-            localStorage.setItem('z12_pow', pow);
-            localStorage.setItem('z12_bot', bot);
-            localStorage.setItem('z12_tasks', JSON.stringify(doneTasks));
-        }
-
-        function openUI(id, navId) {
-            document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(id).style.display = 'flex';
-            document.getElementById(navId).classList.add('active');
-        }
-
-        function closeAll() {
-            document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById('n-mine').classList.add('active');
-        }
-
-        function buy(type) {
-            let cost = (type==='pow') ? pow*500 : 1000;
-            if(bal >= cost) {
-                bal -= cost;
-                if(type==='pow') pow++; else bot += 0.5;
-                refresh();
-            }
-        }
-
-        function doTask(id, reward) {
-            tg.openTelegramLink("https://t.me/zenith_forum");
-            setTimeout(() => {
-                tg.showConfirm("Подписались?", (ok) => {
-                    if(ok && !doneTasks.includes(id)) {
-                        bal += reward; doneTasks.push(id); refresh();
-                    }
-                });
-            }, 2000);
-        }
-
-        // Клик
-        document.getElementById('main-btn').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if(en >= pow) {
-                bal += pow; en -= pow;
-                tg.HapticFeedback.impactOccurred('medium');
-                showAnim(e.touches[0].clientX, e.touches[0].clientY);
-                refresh();
-            }
-        });
-
-        function showAnim(x, y) {
-            const el = document.createElement('div');
-            el.className = 'tap-anim'; el.innerText = '+' + pow;
-            el.style.left = x + 'px'; el.style.top = y + 'px';
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 600);
-        }
-
-        // Daily Logic
-        function checkDaily() {
-            const now = Date.now();
-            if (now - lastClaim > 86400000) {
-                if (now - lastClaim > 172800000) streak = 0;
-                openUI('daily-ui', 'n-mine');
-            }
-        }
-        function claimDaily() {
-            bal += 1000 * (streak + 1);
-            lastClaim = Date.now();
-            streak = (streak + 1) % 7;
-            localStorage.setItem('z12_last_claim', lastClaim);
-            localStorage.setItem('z12_streak', streak);
-            closeAll();
-            refresh();
-        }
-
-        setInterval(() => { if(en < m_en) en = Math.min(m_en, en + 3); if(bot > 0) bal += bot; refresh(); }, 1000);
-        
-        checkDaily();
-        refresh();
-    </script>
-</body>
-</html>
+        // Данные (ключ z14 для чистого старта)
