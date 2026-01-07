@@ -2,106 +2,81 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --blue: #00f3ff; --bg: #020205; }
+        :root { --blue: #00f3ff; --bg: #020205; --card: rgba(255,255,255,0.05); }
         body { 
             background: var(--bg); color: white; font-family: sans-serif; 
-            margin: 0; padding: 0; display: flex; flex-direction: column; 
-            align-items: center; height: 100vh; overflow: hidden;
-            user-select: none; -webkit-user-select: none;
+            display: flex; flex-direction: column; align-items: center; 
+            height: 100vh; margin: 0; overflow: hidden; justify-content: space-between; 
+            padding: 40px 0 90px 0; box-sizing: border-box; 
         }
 
-        /* Верхняя панель - теперь просто текст, не мешает кликам */
-        .top-header {
-            width: 100%; padding: 10px 0; pointer-events: none;
-            display: flex; flex-direction: column; align-items: center; gap: 5px;
-        }
-        .global-supply {
-            width: 90%; padding: 8px; border-radius: 10px;
-            background: rgba(255,0,0,0.1); border: 1px solid rgba(255,69,69,0.3);
-            font-size: 11px; display: flex; justify-content: space-between; box-sizing: border-box;
-        }
+        /* Счет */
+        #score { font-size: 60px; font-weight: 900; text-shadow: 0 0 20px var(--blue); }
 
-        /* Лига */
-        .league-info { width: 90%; text-align: center; margin-top: 10px; }
-        .league-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 4px; }
-        #league-fill { width: 0%; height: 100%; background: var(--blue); transition: 0.5s; }
-
-        /* Счет и Кнопка */
-        .main-area {
-            flex: 1; display: flex; flex-direction: column; 
-            justify-content: center; align-items: center; width: 100%;
-        }
-        #score { font-size: 64px; font-weight: 900; margin-bottom: 20px; text-shadow: 0 0 20px var(--blue); }
-        
+        /* ГЛАВНАЯ КНОПКА (Как в самой первой версии) */
         #main-btn { 
-            width: 250px; height: 250px; border-radius: 50%; 
-            background: radial-gradient(circle, var(--blue) 0%, transparent 75%); 
-            border: 4px solid var(--blue); font-size: 120px; font-weight: 900;
-            color: white; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; touch-action: manipulation; outline: none;
-            -webkit-tap-highlight-color: transparent; position: relative; z-index: 5;
+            width: 240px; height: 240px; border-radius: 50%; 
+            background: radial-gradient(circle, var(--blue) 0%, transparent 70%); 
+            border: 4px solid var(--blue); display: flex; align-items: center; 
+            justify-content: center; font-size: 110px; touch-action: manipulation; 
+            transition: transform 0.05s; -webkit-tap-highlight-color: transparent;
+            outline: none; z-index: 5;
         }
-        #main-btn:active { transform: scale(0.95); }
+        #main-btn:active { transform: scale(0.92); }
 
         /* Энергия */
-        .energy-section { width: 90%; margin-bottom: 100px; text-align: center; }
-        .en-bar { width: 100%; height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; margin-bottom: 5px; }
+        .energy-box { width: 85%; text-align: center; }
+        .en-bar { width: 100%; height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; }
         #en-fill { width: 100%; height: 100%; background: var(--blue); }
 
-        /* Оверлеи */
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 100; display: none; flex-direction: column; align-items: center; padding-top: 40px; }
+        /* Меню (Оверлеи) */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 2, 5, 0.98); z-index: 100; display: none; flex-direction: column; align-items: center; padding-top: 50px; }
+        .card { background: var(--card); border: 1px solid rgba(0,243,255,0.2); width: 90%; padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-act { background: var(--blue); color: #000; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; }
 
         /* Навигация */
-        .nav { 
-            position: fixed; bottom: 0; width: 100%; height: 80px; 
-            background: #0a0a0f; display: flex; border-top: 1px solid rgba(0,243,255,0.2); z-index: 200;
-        }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: #555; background: none; border: none; }
+        .nav { position: fixed; bottom: 0; width: 100%; height: 80px; display: flex; background: #0a0a0f; border-top: 1px solid rgba(0,243,255,0.3); z-index: 200; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: #555; background: none; border: none; outline: none; }
         .nav-item.active { color: var(--blue); }
-
-        .tap-anim { position: absolute; color: white; font-weight: bold; animation: fly 0.6s forwards; pointer-events: none; z-index: 1000; font-size: 40px; }
-        @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px); } }
     </style>
 </head>
 <body>
 
-    <div class="top-header">
-        <div class="global-supply">
-            <span style="color:#ff4545">GLOBAL SUPPLY:</span>
-            <span id="supply-val">1,000,000,000</span>
-        </div>
-        <div class="league-info">
-            <div id="league-name" style="font-size:12px; font-weight:bold; letter-spacing:1px">BRONZE</div>
-            <div class="league-bar"><div id="league-fill"></div></div>
-        </div>
-    </div>
+    <div id="score">0</div>
 
-    <div class="main-area">
-        <div id="score">0</div>
-        <button id="main-btn">Z</button>
-    </div>
+    <button id="main-btn">Z</button>
 
-    <div class="energy-section">
+    <div class="energy-box">
         <div class="en-bar"><div id="en-fill"></div></div>
-        <div style="font-size:14px">⚡ <span id="en-val">1000</span> / 1000</div>
+        <div style="margin-top:8px; font-size:14px;">⚡ <span id="en-val">1000</span> / 1000</div>
+    </div>
+
+    <div id="shop-ui" class="overlay">
+        <h2 style="color:var(--blue)">BOOSTS</h2>
+        <div class="card"><div>Multi-tap</div><button class="btn-act" onclick="buy('pow')">UPGRADE</button></div>
+        <button onclick="closeAll()" style="color:red; background:none; border:none; margin-top:20px;">ЗАКРЫТЬ</button>
+    </div>
+
+    <div id="tasks-ui" class="overlay">
+        <h2 style="color:var(--blue)">TASKS</h2>
+        <div class="card"><div>Zenith Forum</div><button class="btn-act" onclick="tg.openTelegramLink('https://t.me/zenith_forum')">GO</button></div>
+        <button onclick="closeAll()" style="color:red; background:none; border:none; margin-top:20px;">ЗАКРЫТЬ</button>
     </div>
 
     <div class="nav">
-        <button class="nav-item active" onclick="location.reload()">💰<br>MINE</button>
-        <button class="nav-item" onclick="tg.showAlert('Магазин откроется скоро!')">🚀<br>BOOSTS</button>
-        <button class="nav-item" onclick="tg.showAlert('Задания скоро!')">📋<br>TASKS</button>
-        <button class="nav-item" onclick="tg.showAlert('Друзья скоро!')">👥<br>FRIENDS</button>
+        <button class="nav-item active" onclick="closeAll()">💰<br>MINE</button>
+        <button class="nav-item" onclick="openUI('shop-ui')">🚀<br>BOOSTS</button>
+        <button class="nav-item" onclick="openUI('tasks-ui')">📋<br>TASKS</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.enableClosingConfirmation();
 
-        let bal = parseFloat(localStorage.getItem('v15_bal')) || 0;
+        let bal = parseFloat(localStorage.getItem('zen_bal')) || 0;
         let en = 1000;
         let pow = 1;
 
@@ -109,30 +84,34 @@
             document.getElementById('score').innerText = Math.floor(bal).toLocaleString();
             document.getElementById('en-val').innerText = en;
             document.getElementById('en-fill').style.width = (en/10) + "%";
-            document.getElementById('supply-val').innerText = (1000000000 - bal).toLocaleString();
-            localStorage.setItem('v15_bal', bal);
+            localStorage.setItem('zen_bal', bal);
         }
 
-        // Главное событие клика
-        document.getElementById('main-btn').addEventListener('click', (e) => {
+        function openUI(id) {
+            document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
+            document.getElementById(id).style.display = 'flex';
+        }
+
+        function closeAll() {
+            document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
+        }
+
+        function buy(type) {
+            if(bal >= 500) {
+                bal -= 500;
+                pow++;
+                tg.showAlert("Улучшено!");
+                refresh();
+            }
+        }
+
+        // ТОТ САМЫЙ РАБОЧИЙ КЛИК
+        document.getElementById('main-btn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
             if(en >= pow) {
                 bal += pow;
                 en -= pow;
                 tg.HapticFeedback.impactOccurred('medium');
-                
-                // Анимация цифр
-                const rect = e.target.getBoundingClientRect();
-                const x = e.clientX || rect.left + rect.width/2;
-                const y = e.clientY || rect.top + rect.height/2;
-                
-                const anim = document.createElement('div');
-                anim.className = 'tap-anim';
-                anim.innerText = '+' + pow;
-                anim.style.left = x + 'px';
-                anim.style.top = y + 'px';
-                document.body.appendChild(anim);
-                setTimeout(() => anim.remove(), 600);
-
                 refresh();
             }
         });
