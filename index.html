@@ -1,11 +1,153 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-purple: #9d00ff;
+            --bg-dark: #020205;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+        body {
+            background: var(--bg-dark); color: white; font-family: sans-serif;
+            display: flex; flex-direction: column; align-items: center; 
+            height: 100vh; margin: 0; overflow: hidden; justify-content: space-between;
+            padding: 50px 0 100px 0; box-sizing: border-box;
+        }
+        .header { position: fixed; top: 0; width: 100%; padding: 10px 20px; display: flex; justify-content: space-between; background: var(--glass); backdrop-filter: blur(10px); z-index: 10; border-bottom: 1px solid rgba(0,243,255,0.1); box-sizing: border-box; }
+        .league-box { width: 90%; text-align: center; margin-top: 10px; }
+        #league-name { font-size: 14px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; }
+        .level-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 5px; overflow: hidden; }
+        #level-bar-fill { width: 0%; height: 100%; background: var(--neon-blue); transition: 0.5s; }
+        #score { font-size: 60px; font-weight: 900; text-shadow: 0 0 20px var(--neon-blue); margin: 10px 0; }
+        #main-btn {
+            width: 220px; height: 220px; border-radius: 50%;
+            background: radial-gradient(circle, var(--neon-blue) 0%, transparent 70%);
+            border: 4px solid var(--neon-blue); display: flex; align-items: center; justify-content: center;
+            font-size: 100px; text-shadow: 0 0 20px white; transition: transform 0.05s;
+            -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+        }
+        #main-btn:active { transform: scale(0.92); }
+        .energy-box { width: 80%; display: flex; flex-direction: column; align-items: center; }
+        .energy-bar-bg { width: 100%; height: 12px; background: var(--glass); border-radius: 20px; border: 1px solid rgba(0,243,255,0.2); overflow: hidden; }
+        #energy-fill { width: 100%; height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)); transition: 0.2s; }
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; height: 80px;
+            background: rgba(10, 10, 15, 0.95); display: flex; justify-content: space-around;
+            align-items: center; border-top: 1px solid var(--neon-blue); padding-bottom: 10px;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 11px; border: none; background: none; width: 33%; }
+        .nav-item.active { color: var(--neon-blue); }
+        .tap-anim { position: absolute; color: var(--neon-blue); font-weight: bold; animation: fly 0.7s forwards; pointer-events: none; font-size: 32px; z-index: 100; }
+        @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
+    </style>
 </head>
-<body style="background: black; color: white; display: flex; align-items: center; justify-content: center; height: 100vh;">
-    <button onclick="window.Telegram.WebApp.showAlert('КНОПКА РАБОТАЕТ!')" style="padding: 20px; font-size: 20px;">
-        НАЖМИ МЕНЯ (ТЕСТ)
-    </button>
+<body>
+    <div class="header">
+        <span id="user-name">KIMI.APP</span>
+        <span id="user-id" style="opacity: 0.5; font-size: 10px;">ID: ---</span>
+    </div>
+    <div class="league-box">
+        <div id="league-name">BRONZE LEAGUE</div>
+        <div class="level-bar-bg"><div id="level-bar-fill"></div></div>
+    </div>
+    <div id="score">0</div>
+    <div id="main-btn">Z</div>
+    <div class="energy-box">
+        <div class="energy-bar-bg"><div id="energy-fill"></div></div>
+        <div style="margin-top: 8px; font-size: 14px;">⚡ <span id="e-val">1000</span> / <span id="e-max">1000</span></div>
+    </div>
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="location.reload()"><span style="font-size:24px">💰</span><span>MINE</span></div>
+        <div class="nav-item" onclick="openStore()"><span style="font-size:24px">🚀</span><span>BOOSTS</span></div>
+        <div class="nav-item" onclick="window.Telegram.WebApp.showAlert('Stats coming soon!')"><span style="font-size:24px">📊</span><span>STATS</span></div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        let balance = parseFloat(localStorage.getItem('z2_bal')) || 0;
+        let energy = parseFloat(localStorage.getItem('z2_en')) || 1000;
+        let maxEnergy = parseFloat(localStorage.getItem('z2_m_en')) || 1000;
+        let tapPower = parseFloat(localStorage.getItem('z2_pow')) || 1;
+        let autoRate = parseFloat(localStorage.getItem('z2_auto')) || 0;
+
+        if (tg.initDataUnsafe.user) {
+            document.getElementById('user-name').innerText = tg.initDataUnsafe.user.first_name.toUpperCase() + ".APP";
+            document.getElementById('user-id').innerText = "ID: " + tg.initDataUnsafe.user.id;
+        }
+
+        function updateUI() {
+            document.getElementById('score').innerText = Math.floor(balance);
+            document.getElementById('e-val').innerText = Math.floor(energy);
+            document.getElementById('e-max').innerText = maxEnergy;
+            document.getElementById('energy-fill').style.width = (energy / maxEnergy * 100) + "%";
+
+            let l = "BRONZE"; let c = "#00f3ff"; let p = (balance/5000)*100;
+            if(balance >= 5000) { l="SILVER"; c="#C0C0C0"; p=((balance-5000)/20000)*100; }
+            if(balance >= 25000) { l="GOLD"; c="#FFD700"; p=((balance-25000)/75000)*100; }
+            if(balance >= 100000) { l="DIAMOND"; c="#b9f2ff"; p=((balance-100000)/400000)*100; }
+            if(balance >= 500000) { l="LORD"; c="#ff3e3e"; p=100; }
+
+            const ln = document.getElementById('league-name');
+            ln.innerText = l + " LEAGUE"; ln.style.color = c;
+            document.getElementById('level-bar-fill').style.background = c;
+            document.getElementById('level-bar-fill').style.width = Math.min(100, p) + "%";
+
+            localStorage.setItem('z2_bal', balance);
+            localStorage.setItem('z2_en', energy);
+            localStorage.setItem('z2_m_en', maxEnergy);
+            localStorage.setItem('z2_pow', tapPower);
+            localStorage.setItem('z2_auto', autoRate);
+        }
+
+        document.getElementById('main-btn').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if(energy >= tapPower) {
+                balance += tapPower; energy -= tapPower;
+                if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+                showAnim(e.touches[0].clientX, e.touches[0].clientY);
+                updateUI();
+            }
+        });
+
+        setInterval(() => {
+            if(energy < maxEnergy) energy = Math.min(maxEnergy, energy + 2);
+            if(autoRate > 0) balance += autoRate;
+            updateUI();
+        }, 1000);
+
+        function openStore() {
+            tg.showPopup({
+                title: 'ZENITH STORE',
+                message: `Your Balance: ${Math.floor(balance)} $ZNT`,
+                buttons: [
+                    {id: 'p', type: 'default', text: `Multi-tap (500)`},
+                    {id: 'e', type: 'default', text: `Max Energy (500)`},
+                    {id: 'a', type: 'default', text: `Auto-Bot (1000)`},
+                    {type: 'cancel', text: 'Close'}
+                ]
+            }, (btn) => {
+                if(btn === 'p' && balance >= 500) { balance -= 500; tapPower += 1; tg.showAlert('Power Upgraded!'); }
+                else if(btn === 'e' && balance >= 500) { balance -= 500; maxEnergy += 500; energy = maxEnergy; tg.showAlert('Energy Increased!'); }
+                else if(btn === 'a' && balance >= 1000) { balance -= 1000; autoRate += 1; tg.showAlert('Bot Started!'); }
+                else if(btn) { tg.showAlert('Need more $ZNT!'); }
+                updateUI();
+            });
+        }
+
+        function showAnim(x, y) {
+            const el = document.createElement('div');
+            el.className = 'tap-anim'; el.innerText = '+' + tapPower;
+            el.style.left = x + 'px'; el.style.top = (y - 50) + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 700);
+        }
+        updateUI();
+    </script>
 </body>
 </html>
