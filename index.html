@@ -9,7 +9,35 @@
         body { background: var(--bg); color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; height: 100vh; margin: 0; overflow: hidden; justify-content: space-between; padding: 40px 0 90px 0; box-sizing: border-box; }
         
         /* League & Score */
-        .league-info { width: 90%; text-align: center; }
+        <div class="global-supply" style="width: 100%; padding: 5px 20px; box-sizing: border-box; background: rgba(255,0,0,0.1); border-bottom: 1px solid #ff4545; font-size: 10px; display: flex; justify-content: space-between; position: fixed; top: 0; z-index: 2000;">
+    <span style="color: #ff4545; font-weight: bold;">GLOBAL SUPPLY:</span>
+    <span id="supply-val">1,000,000,000 $ZNT</span>
+</div>
+
+<script>
+    const TOTAL_SUPPLY_LIMIT = 1000000000;
+    
+    // Внутри функции refresh() добавь это:
+    function refresh() {
+        // ... твой старый код refresh ...
+        
+        // Расчет остатка (пока эмулируем от общего кол-ва игроков, позже подключим сервер)
+        // Для теста: вычитаем из миллиарда текущий баланс * 1000 (якобы от всех юзеров)
+        let simulatedGlobalMined = bal * 1250; 
+        let remaining = TOTAL_SUPPLY_LIMIT - simulatedGlobalMined;
+        if(remaining < 0) remaining = 0;
+        
+        document.getElementById('supply-val').innerText = Math.floor(remaining).toLocaleString() + " $ZNT";
+        
+        // Если монет осталось мало, меняем цвет на более тревожный
+        if(remaining < TOTAL_SUPPLY_LIMIT * 0.1) {
+            document.getElementById('supply-val').style.color = "red";
+        }
+        
+        // ... остальной код сохранения ...
+    }
+</script>
+
         #league-name { font-weight: bold; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
         .league-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
         #league-fill { width: 0%; height: 100%; background: var(--blue); transition: 0.5s; }
