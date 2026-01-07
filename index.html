@@ -164,28 +164,30 @@
             refresh();
         }
 
-        function doTask(id, reward) {
-    let url = "";
-    
-    // ВСТАВЬ СВОИ ССЫЛКИ ТУТ
-    if(id === 'sub') url = "https://t.me/твой_канал"; // Ссылка на канал
-    if(id === 'chat') url = "https://t.me/твой_чат";  // Ссылка на чат
+                function doTask(id, reward) {
+            let url = "https://t.me/zenith_forum"; // Твоя ссылка
+            
+            // Открываем твой канал
+            tg.openTelegramLink(url);
 
-    // Открываем ссылку
-    tg.openTelegramLink(url);
+            // Ждем 2 секунды и спрашиваем подтверждение
+            setTimeout(() => {
+                tg.showConfirm("Вы подписались на Zenith Forum?", (ok) => {
+                    if(ok) {
+                        if (!doneTasks.includes(id)) {
+                            bal += reward;
+                            doneTasks.push(id);
+                            tg.HapticFeedback.notificationOccurred('success');
+                            tg.showAlert("Успешно! + " + reward + " $ZNT зачислено!");
+                            refresh();
+                        } else {
+                            tg.showAlert("Вы уже получили эту награду!");
+                        }
+                    }
+                });
+            }, 2000);
+        }
 
-    // Показываем подтверждение через небольшую паузу, чтобы игрок успел перейти
-    setTimeout(() => {
-        tg.showConfirm("Вы подписались на ресурс?", (ok) => {
-            if(ok) {
-                bal += reward;
-                doneTasks.push(id);
-                tg.HapticFeedback.notificationOccurred('success');
-                tg.showAlert("Поздравляем! + " + reward + " $ZNT зачислено!");
-                refresh();
-            }
-        });
-    }, 2000);
 }
 
 
