@@ -5,48 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --blue: #00f3ff; --purp: #9d00ff; --bg: #020205; --gold: #ffd700; --silver: #c0c0c0; }
+        :root { --blue: #00f3ff; --purp: #9d00ff; --bg: #020205; --card: rgba(255,255,255,0.05); }
         body { background: var(--bg); color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; height: 100vh; margin: 0; overflow: hidden; justify-content: space-between; padding: 40px 0 90px 0; box-sizing: border-box; }
         
-        /* League Info */
-        .league-info { width: 90%; text-align: center; margin-top: 10px; }
+        /* League & Score */
+        .league-info { width: 90%; text-align: center; }
         #league-name { font-weight: bold; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
         .league-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
         #league-fill { width: 0%; height: 100%; background: var(--blue); transition: 0.5s; }
+        #score { font-size: 64px; font-weight: 900; text-shadow: 0 0 20px var(--blue); margin: 10px 0; }
 
-        /* Main Game Elements */
-        #score { font-size: 64px; font-weight: 900; text-shadow: 0 0 20px var(--blue); margin: 10px 0; transition: 0.3s; }
+        /* Main Button */
         #main-btn { width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, var(--blue) 0%, transparent 70%); border: 4px solid var(--blue); display: flex; align-items: center; justify-content: center; font-size: 100px; touch-action: manipulation; transition: transform 0.05s; z-index: 1; -webkit-tap-highlight-color: transparent; }
         #main-btn:active { transform: scale(0.92); }
 
-        /* Energy Bar */
-        .energy-box { width: 85%; z-index: 1; }
-        .bar-bg { width: 100%; height: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; border: 1px solid rgba(0,243,255,0.2); overflow: hidden; }
-        #bar-fill { width: 100%; height: 100%; background: linear-gradient(90deg, var(--blue), var(--purp)); transition: 0.2s; }
-
-        /* Shop Container */
-        #shop-container, #friends-container { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(2, 2, 5, 0.98); z-index: 1000; 
-            display: none; flex-direction: column; align-items: center; padding-top: 60px;
-        }
-        .section-header { font-size: 26px; color: var(--blue); margin-bottom: 30px; font-weight: bold; }
-        .boost-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(0,243,255,0.2); width: 88%; padding: 18px; border-radius: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
-        .boost-info div { font-weight: bold; font-size: 16px; }
-        .boost-info span { font-size: 11px; color: #888; }
-        .buy-btn { background: var(--blue); color: #000; border: none; padding: 10px 15px; border-radius: 12px; font-weight: 900; min-width: 80px; }
-
-        /* Friends Section */
-        .friends-link-box { background: rgba(255,255,255,0.04); border: 1px solid rgba(0,243,255,0.2); width: 88%; padding: 20px; border-radius: 20px; margin-bottom: 20px; text-align: center; }
-        #referral-link { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; font-size: 14px; word-break: break-all; margin-top: 10px; }
-        .copy-btn { background: var(--blue); color: #000; border: none; padding: 10px 15px; border-radius: 12px; font-weight: bold; margin-top: 15px; }
+        /* Popups (Shop, Friends, Tasks) */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 2, 5, 0.98); z-index: 1000; display: none; flex-direction: column; align-items: center; padding-top: 50px; overflow-y: auto; padding-bottom: 100px; }
+        .section-header { font-size: 26px; color: var(--blue); margin-bottom: 25px; font-weight: bold; }
+        .card { background: var(--card); border: 1px solid rgba(0,243,255,0.2); width: 90%; padding: 15px; border-radius: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
+        .card-info div { font-weight: bold; font-size: 16px; }
+        .card-info span { font-size: 12px; color: #888; }
+        .btn-act { background: var(--blue); color: #000; border: none; padding: 10px 15px; border-radius: 10px; font-weight: 900; }
+        .btn-act.done { background: #333; color: #888; }
 
         /* Navigation */
         .nav { position: fixed; bottom: 0; width: 100%; height: 85px; display: flex; justify-content: space-around; background: #0a0a0f; border-top: 1px solid rgba(0,243,255,0.3); z-index: 10; }
-        .nav-item { background: none; border: none; color: #555; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; font-size: 14px; font-weight: bold; }
+        .nav-item { background: none; border: none; color: #555; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; font-size: 11px; }
         .nav-item.active { color: var(--blue); }
 
-        .tap-anim { position: absolute; color: white; font-weight: bold; animation: fly 0.6s ease-out forwards; pointer-events: none; font-size: 38px; z-index: 2000; text-shadow: 0 0 10px var(--blue); }
+        .tap-anim { position: absolute; color: white; font-weight: bold; animation: fly 0.6s forwards; pointer-events: none; font-size: 38px; z-index: 2000; }
         @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
     </style>
 </head>
@@ -60,144 +47,142 @@
     <div id="score">0</div>
     <button id="main-btn">Z</button>
 
-    <div class="energy-box">
-        <div class="bar-bg"><div id="bar-fill"></div></div>
-        <div style="text-align:center; margin-top:8px; font-size: 13px;">⚡ <span id="e-val">1000</span> / <span id="e-max">1000</span></div>
-        <div id="passive-info" style="text-align:center; font-size:11px; color:var(--purp); margin-top:4px;">+0 / sec</div>
+    <div style="width: 85%;">
+        <div class="league-bar" style="height: 10px;"><div id="en-fill" style="width: 100%; height: 100%; background: var(--blue);"></div></div>
+        <div style="text-align:center; margin-top:5px;">⚡ <span id="en-val">1000</span> / <span id="en-max">1000</span></div>
     </div>
 
-    <div id="shop-container">
-        <div class="section-header">BOOSTS</div>
-        <div class="boost-card">
-            <div class="boost-info"><div>Multi-tap</div><span id="p-lvl">Lvl 1</span></div>
-            <button class="buy-btn" onclick="buy('pow')"><span id="p-cost">500</span></button>
+    <div id="tasks-ui" class="overlay">
+        <div class="section-header">ЗАДАНИЯ</div>
+        <div class="card">
+            <div class="card-info"><div>Подпишись на канал</div><span>+10,000 $ZNT</span></div>
+            <button id="task-sub" class="btn-act" onclick="doTask('sub', 10000)">GO</button>
         </div>
-        <div class="boost-card">
-            <div class="boost-info"><div>Energy Limit</div><span id="e-lvl">Lvl 1</span></div>
-            <button class="buy-btn" onclick="buy('max')"><span id="e-cost">500</span></button>
+        <div class="card">
+            <div class="card-info"><div>Вступи в чат</div><span>+5,000 $ZNT</span></div>
+            <button id="task-chat" class="btn-act" onclick="doTask('chat', 5000)">GO</button>
         </div>
-        <div class="boost-card">
-            <div class="boost-info"><div>Auto-Bot</div><span id="b-lvl">Lvl 0</span></div>
-            <button class="buy-btn" onclick="buy('bot')"><span id="b-cost">1000</span></button>
-        </div>
-        <button onclick="hideAllContainers(); showContainer('main-game'); document.getElementById('nav-mine').classList.add('active');" style="margin-top:30px; color:#ff4545; background:none; border:none; font-weight:bold;">CLOSE</button>
+        <button onclick="closeAll()" style="color:red; background:none; border:none; margin-top:20px;">ЗАКРЫТЬ</button>
     </div>
 
-    <div id="friends-container">
-        <div class="section-header">FRIENDS</div>
-        <div class="friends-link-box">
-            <div style="font-weight:bold; margin-bottom:10px;">Пригласи друга и получи 5000 $ZNT!</div>
-            <div id="referral-link">Загрузка...</div>
-            <button class="copy-btn" onclick="copyReferralLink()">КОПИРОВАТЬ</button>
+    <div id="shop-ui" class="overlay">
+        <div class="section-header">МАГАЗИН</div>
+        <div class="card">
+            <div class="card-info"><div>Multi-tap</div><span id="p-lvl">Lvl 1</span></div>
+            <button class="btn-act" onclick="buy('pow')"><span id="p-cost">500</span></button>
         </div>
-        <div style="font-size:12px; opacity:0.7; margin-top:20px;">Приглашено: <span id="friends-count">0</span></div>
-        <button onclick="hideAllContainers(); showContainer('main-game'); document.getElementById('nav-mine').classList.add('active');" style="margin-top:30px; color:#ff4545; background:none; border:none; font-weight:bold;">ЗАКРЫТЬ</button>
+        <div class="card">
+            <div class="card-info"><div>Auto-Bot</div><span id="b-lvl">Lvl 0</span></div>
+            <button class="btn-act" onclick="buy('bot')"><span id="b-cost">1000</span></button>
+        </div>
+        <button onclick="closeAll()" style="color:red; background:none; border:none; margin-top:20px;">ЗАКРЫТЬ</button>
+    </div>
+
+    <div id="friends-ui" class="overlay">
+        <div class="section-header">ДРУЗЬЯ</div>
+        <div class="card" style="flex-direction:column; gap:10px;">
+            <div style="text-align:center">Даем 5,000 $ZNT за друга!</div>
+            <div id="ref-link" style="font-size:10px; color:var(--blue); background:rgba(0,0,0,0.5); padding:10px; border-radius:5px; width:100%; box-sizing:border-box; word-break:break-all;">Loading...</div>
+            <button class="btn-act" style="width:100%" onclick="copyRef()">КОПИРОВАТЬ</button>
+        </div>
+        <button onclick="closeAll()" style="color:red; background:none; border:none; margin-top:20px;">ЗАКРЫТЬ</button>
     </div>
 
     <div class="nav">
-        <button class="nav-item active" id="nav-mine" onclick="hideAllContainers(); showContainer('main-game'); this.classList.add('active'); document.getElementById('nav-boosts').classList.remove('active'); document.getElementById('nav-friends').classList.remove('active');">
-            💰<span>MINE</span>
-        </button>
-        <button class="nav-item" id="nav-boosts" onclick="hideAllContainers(); showContainer('shop-container'); this.classList.add('active'); document.getElementById('nav-mine').classList.remove('active'); document.getElementById('nav-friends').classList.remove('active');">
-            🚀<span>BOOSTS</span>
-        </button>
-        <button class="nav-item" id="nav-friends" onclick="hideAllContainers(); showContainer('friends-container'); this.classList.add('active'); document.getElementById('nav-mine').classList.remove('active'); document.getElementById('nav-boosts').classList.remove('active');">
-            👥<span>FRIENDS</span>
-        </button>
+        <button class="nav-item active" id="n-mine" onclick="closeAll()">💰<br>MINE</button>
+        <button class="nav-item" id="n-shop" onclick="openUI('shop-ui', 'n-shop')">🚀<br>BOOSTS</button>
+        <button class="nav-item" id="n-tasks" onclick="openUI('tasks-ui', 'n-tasks')">📋<br>TASKS</button>
+        <button class="nav-item" id="n-friends" onclick="openUI('friends-ui', 'n-friends')">👥<br>FRIENDS</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let bal = parseFloat(localStorage.getItem('z9_bal')) || 0;
-        let en = parseFloat(localStorage.getItem('z9_en')) || 1000;
-        let m_en = parseFloat(localStorage.getItem('z9_m_en')) || 1000;
-        let pow = parseInt(localStorage.getItem('z9_pow')) || 1;
-        let bot = parseFloat(localStorage.getItem('z9_bot')) || 0;
-        let invited = parseInt(localStorage.getItem('z9_invited')) || 0;
-        let hasInvitedBonus = localStorage.getItem('z9_has_invited_bonus') === 'true' || false;
+        let bal = parseFloat(localStorage.getItem('z10_bal')) || 0;
+        let en = parseFloat(localStorage.getItem('z10_en')) || 1000;
+        let m_en = 1000;
+        let pow = parseInt(localStorage.getItem('z10_pow')) || 1;
+        let bot = parseFloat(localStorage.getItem('z10_bot')) || 0;
+        let doneTasks = JSON.parse(localStorage.getItem('z10_tasks') || '[]');
 
-        const mainGameContainer = document.querySelector('body'); 
-
-        function refreshUI() {
+        function refresh() {
             document.getElementById('score').innerText = Math.floor(bal);
-            document.getElementById('e-val').innerText = Math.floor(en);
-            document.getElementById('e-max').innerText = m_en;
-            document.getElementById('bar-fill').style.width = (en/m_en*100) + "%";
-            document.getElementById('passive-info').innerText = "+" + bot.toFixed(1) + " / sec";
-            document.getElementById('friends-count').innerText = invited;
+            document.getElementById('en-val').innerText = Math.floor(en);
+            document.getElementById('en-fill').style.width = (en/m_en*100) + "%";
             
-            // Цены и уровни
+            // Магазин
             let pCost = pow * 500;
-            let eCost = (m_en/500) * 500;
-            let bCost = (bot === 0) ? 1000 : Math.floor((bot * 2 + 1) * 1000);
-            
+            let bCost = (bot === 0) ? 1000 : Math.floor((bot*2 + 1) * 1000);
             document.getElementById('p-cost').innerText = pCost;
-            document.getElementById('e-cost').innerText = eCost;
             document.getElementById('b-cost').innerText = bCost;
             document.getElementById('p-lvl').innerText = "Lvl " + pow;
-            document.getElementById('e-lvl').innerText = "Lvl " + (m_en/500);
-            document.getElementById('b-lvl').innerText = "Lvl " + bot.toFixed(1);
+            document.getElementById('b-lvl').innerText = "Lvl " + (bot*2);
 
-            // Лига
-            let league = "BRONZE"; let color = "#00f3ff"; let prog = (bal/5000)*100;
-            if(bal >= 5000) { league="SILVER"; color="#c0c0c0"; prog=((bal-5000)/20000)*100; }
-            if(bal >= 25000) { league="GOLD"; color="#ffd700"; prog=((bal-25000)/75000)*100; }
-            if(bal >= 100000) { league="DIAMOND"; color="#b9f2ff"; prog=100; }
-            
-            document.getElementById('league-name').innerText = league;
-            document.getElementById('league-name').style.color = color;
-            document.getElementById('league-fill').style.background = color;
-            document.getElementById('league-fill').style.width = Math.min(prog, 100) + "%";
-            document.getElementById('score').style.textShadow = "0 0 20px " + color;
+            // Лиги
+            let l = "BRONZE"; let c = "#00f3ff"; let p = (bal/5000)*100;
+            if(bal >= 5000) { l="SILVER"; c="#c0c0c0"; p=((bal-5000)/20000)*100; }
+            if(bal >= 25000) { l="GOLD"; c="#ffd700"; p=((bal-25000)/75000)*100; }
+            document.getElementById('league-name').innerText = l;
+            document.getElementById('league-name').style.color = c;
+            document.getElementById('league-fill').style.background = c;
+            document.getElementById('league-fill').style.width = Math.min(p, 100) + "%";
 
-            localStorage.setItem('z9_bal', bal);
-            localStorage.setItem('z9_en', en);
-            localStorage.setItem('z9_m_en', m_en);
-            localStorage.setItem('z9_pow', pow);
-            localStorage.setItem('z9_bot', bot);
-            localStorage.setItem('z9_invited', invited);
-            localStorage.setItem('z9_has_invited_bonus', hasInvitedBonus);
+            // Задания
+            doneTasks.forEach(t => {
+                let b = document.getElementById('task-'+t);
+                if(b) { b.innerText = "DONE"; b.classList.add('done'); b.onclick = null; }
+            });
+
+            localStorage.setItem('z10_bal', bal);
+            localStorage.setItem('z10_en', en);
+            localStorage.setItem('z10_pow', pow);
+            localStorage.setItem('z10_bot', bot);
+            localStorage.setItem('z10_tasks', JSON.stringify(doneTasks));
         }
 
-        function hideAllContainers() {
-            document.getElementById('shop-container').style.display = 'none';
-            document.getElementById('friends-container').style.display = 'none';
-            document.getElementById('nav-mine').classList.remove('active');
-            document.getElementById('nav-boosts').classList.remove('active');
-            document.getElementById('nav-friends').classList.remove('active');
+        function openUI(id, navId) {
+            closeAll();
+            document.getElementById(id).style.display = 'flex';
+            document.getElementById(navId).classList.add('active');
+            document.getElementById('n-mine').classList.remove('active');
         }
 
-        function showContainer(containerId) {
-            if (containerId === 'main-game') {
-                // Главная игра всегда отображается, когда другие скрыты
-            } else {
-                document.getElementById(containerId).style.display = 'flex';
-            }
+        function closeAll() {
+            document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('n-mine').classList.add('active');
         }
 
         function buy(type) {
             let pCost = pow * 500;
-            let eCost = (m_en/500) * 500;
-            let bCost = (bot === 0) ? 1000 : Math.floor((bot * 2 + 1) * 1000);
-
+            let bCost = (bot === 0) ? 1000 : Math.floor((bot*2 + 1) * 1000);
             if(type==='pow' && bal >= pCost) { bal -= pCost; pow++; }
-            else if(type==='max' && bal >= eCost) { bal -= eCost; m_en += 500; en = m_en; }
             else if(type==='bot' && bal >= bCost) { bal -= bCost; bot += 0.5; }
-            else { tg.showAlert("Недостаточно $ZNT!"); return; }
-            
-            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-            refreshUI();
+            else { tg.showAlert("Мало монет!"); return; }
+            tg.HapticFeedback.notificationOccurred('success');
+            refresh();
+        }
+
+        function doTask(id, reward) {
+            // Тут можно вставить реальную ссылку: window.open('https://t.me/твой_канал');
+            tg.showConfirm("Вы выполнили задание?", (ok) => {
+                if(ok) {
+                    bal += reward;
+                    doneTasks.push(id);
+                    tg.showAlert("Получено " + reward + " $ZNT!");
+                    refresh();
+                }
+            });
         }
 
         document.getElementById('main-btn').addEventListener('touchstart', (e) => {
             e.preventDefault();
             if(en >= pow) {
                 bal += pow; en -= pow;
-                if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+                tg.HapticFeedback.impactOccurred('medium');
                 showAnim(e.touches[0].clientX, e.touches[0].clientY);
-                refreshUI();
+                refresh();
             }
         });
 
@@ -209,58 +194,20 @@
             setTimeout(() => el.remove(), 600);
         }
 
-        // Referral System Logic
-        function generateReferralLink() {
-            if (tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
-                const userId = tg.initDataUnsafe.user.id;
-                // Замени @YourBotUsername на имя твоего бота в Telegram
-                return `https://t.me/zenithclicker_bot/game?startapp=ref_${userId}`;
-            }
-            return "Не удалось сгенерировать ссылку. Запустите бота из Telegram.";
+        function copyRef() {
+            let link = "https://t.me/ТВОЙ_БОТ/game?startapp=ref_" + (tg.initDataUnsafe.user?.id || "123");
+            navigator.clipboard.writeText(link);
+            tg.showAlert("Ссылка скопирована!");
         }
 
-        function copyReferralLink() {
-            const link = document.getElementById('referral-link').innerText;
-            navigator.clipboard.writeText(link).then(() => {
-                tg.showAlert('Ссылка скопирована!');
-            }).catch(err => {
-                tg.showAlert('Ошибка копирования.');
-            });
-        }
-
-        // Check for referral code on app start
-        function checkReferral() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const startParam = urlParams.get('startapp');
-            if (startParam && startParam.startsWith('ref_') && tg.initDataUnsafe.user && !hasInvitedBonus) {
-                const referrerId = startParam.substring(4);
-                if (referrerId !== String(tg.initDataUnsafe.user.id)) {
-                    bal += 5000; // Бонус приглашенному
-                    invited += 1; // Увеличиваем счетчик у пригласившего (для демонстрации)
-                    hasInvitedBonus = true; // Отмечаем, что бонус получен
-                    tg.showAlert(`Бонус 5000 $ZNT за приглашение от ${referrerId}!`);
-                    // В реальной игре здесь нужно отправить запрос на сервер рефереру
-                }
-            }
-        }
-
-        // Game loop
         setInterval(() => {
             if(en < m_en) en = Math.min(m_en, en + 3);
             if(bot > 0) bal += bot;
-            refreshUI();
+            refresh();
         }, 1000);
-        
-        // Initial setup
-        document.addEventListener('DOMContentLoaded', () => {
-            refreshUI();
-            checkReferral();
-            document.getElementById('referral-link').innerText = generateReferralLink();
-            // Показываем главную игру по умолчанию
-            hideAllContainers();
-            showContainer('main-game'); 
-            document.getElementById('nav-mine').classList.add('active');
-        });
+
+        document.getElementById('ref-link').innerText = "https://t.me/ТВОЙ_БОТ/game?startapp=ref_" + (tg.initDataUnsafe.user?.id || "user");
+        refresh();
     </script>
 </body>
 </html>
