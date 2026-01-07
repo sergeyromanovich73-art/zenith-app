@@ -5,73 +5,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --blue: #00f3ff; --purp: #9d00ff; --bg: #020205; }
+        :root { --blue: #00f3ff; --purp: #9d00ff; --bg: #020205; --gold: #ffd700; --silver: #c0c0c0; }
         body { background: var(--bg); color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; height: 100vh; margin: 0; overflow: hidden; justify-content: space-between; padding: 40px 0 90px 0; box-sizing: border-box; }
         
-        #score { font-size: 64px; font-weight: 900; text-shadow: 0 0 20px var(--blue); margin: 10px 0; }
-        #main-btn { width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, var(--blue) 0%, transparent 70%); border: 4px solid var(--blue); display: flex; align-items: center; justify-content: center; font-size: 100px; touch-action: manipulation; transition: transform 0.05s; z-index: 1; outline: none; }
+        /* League Info */
+        .league-info { width: 90%; text-align: center; margin-top: 10px; }
+        #league-name { font-weight: bold; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
+        .league-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+        #league-fill { width: 0%; height: 100%; background: var(--blue); transition: 0.5s; }
+
+        /* Main Game Elements */
+        #score { font-size: 64px; font-weight: 900; text-shadow: 0 0 20px var(--blue); margin: 10px 0; transition: 0.3s; }
+        #main-btn { width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, var(--blue) 0%, transparent 70%); border: 4px solid var(--blue); display: flex; align-items: center; justify-content: center; font-size: 100px; touch-action: manipulation; transition: transform 0.05s; z-index: 1; -webkit-tap-highlight-color: transparent; }
         #main-btn:active { transform: scale(0.92); }
 
+        /* Energy Bar */
         .energy-box { width: 85%; z-index: 1; }
         .bar-bg { width: 100%; height: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; border: 1px solid rgba(0,243,255,0.2); overflow: hidden; }
         #bar-fill { width: 100%; height: 100%; background: linear-gradient(90deg, var(--blue), var(--purp)); transition: 0.2s; }
 
-        /* МЕНЮ МАГАЗИНА */
-        #shop-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 2, 5, 0.98); z-index: 1000; display: none; flex-direction: column; align-items: center; padding-top: 60px; }
-        .shop-header { font-size: 26px; color: var(--blue); margin-bottom: 30px; font-weight: bold; text-shadow: 0 0 10px var(--blue); }
-        .boost-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(0,243,255,0.2); width: 88%; padding: 18px; border-radius: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
-        .boost-info div { font-weight: bold; font-size: 18px; margin-bottom: 4px; }
-        .boost-info span { font-size: 12px; color: #888; }
-        .buy-btn { background: var(--blue); color: #000; border: none; padding: 12px 18px; border-radius: 14px; font-weight: 900; font-size: 14px; }
-        .buy-btn:active { opacity: 0.7; }
+        /* Shop Container */
+        #shop-container, #friends-container { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(2, 2, 5, 0.98); z-index: 1000; 
+            display: none; flex-direction: column; align-items: center; padding-top: 60px;
+        }
+        .section-header { font-size: 26px; color: var(--blue); margin-bottom: 30px; font-weight: bold; }
+        .boost-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(0,243,255,0.2); width: 88%; padding: 18px; border-radius: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; }
+        .boost-info div { font-weight: bold; font-size: 16px; }
+        .boost-info span { font-size: 11px; color: #888; }
+        .buy-btn { background: var(--blue); color: #000; border: none; padding: 10px 15px; border-radius: 12px; font-weight: 900; min-width: 80px; }
 
-        /* Навигация */
+        /* Friends Section */
+        .friends-link-box { background: rgba(255,255,255,0.04); border: 1px solid rgba(0,243,255,0.2); width: 88%; padding: 20px; border-radius: 20px; margin-bottom: 20px; text-align: center; }
+        #referral-link { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; font-size: 14px; word-break: break-all; margin-top: 10px; }
+        .copy-btn { background: var(--blue); color: #000; border: none; padding: 10px 15px; border-radius: 12px; font-weight: bold; margin-top: 15px; }
+
+        /* Navigation */
         .nav { position: fixed; bottom: 0; width: 100%; height: 85px; display: flex; justify-content: space-around; background: #0a0a0f; border-top: 1px solid rgba(0,243,255,0.3); z-index: 10; }
-        .nav-item { background: none; border: none; color: #555; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 50%; transition: 0.3s; }
+        .nav-item { background: none; border: none; color: #555; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; font-size: 14px; font-weight: bold; }
         .nav-item.active { color: var(--blue); }
 
         .tap-anim { position: absolute; color: white; font-weight: bold; animation: fly 0.6s ease-out forwards; pointer-events: none; font-size: 38px; z-index: 2000; text-shadow: 0 0 10px var(--blue); }
-        @keyframes fly { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-120px) scale(1.5); } }
+        @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
     </style>
 </head>
 <body>
+
+    <div class="league-info">
+        <div id="league-name">BRONZE</div>
+        <div class="league-bar"><div id="league-fill"></div></div>
+    </div>
 
     <div id="score">0</div>
     <button id="main-btn">Z</button>
 
     <div class="energy-box">
         <div class="bar-bg"><div id="bar-fill"></div></div>
-        <div style="text-align:center; margin-top:8px; font-size: 14px; letter-spacing: 1px;">⚡ <span id="e-val">1000</span> / <span id="e-max">1000</span></div>
-        <div id="passive-info" style="text-align:center; font-size:12px; color:var(--purp); margin-top:5px; opacity:0.8;">Passive: 0/sec</div>
+        <div style="text-align:center; margin-top:8px; font-size: 13px;">⚡ <span id="e-val">1000</span> / <span id="e-max">1000</span></div>
+        <div id="passive-info" style="text-align:center; font-size:11px; color:var(--purp); margin-top:4px;">+0 / sec</div>
     </div>
 
     <div id="shop-container">
-        <div class="shop-header">ZENITH UPGRADES</div>
-        
+        <div class="section-header">BOOSTS</div>
         <div class="boost-card">
-            <div class="boost-info"><div>Multi-tap</div><span id="pow-lvl">Lvl: 1</span></div>
-            <button class="buy-btn" onclick="buyItem('pow', 500)">500 $ZNT</button>
+            <div class="boost-info"><div>Multi-tap</div><span id="p-lvl">Lvl 1</span></div>
+            <button class="buy-btn" onclick="buy('pow')"><span id="p-cost">500</span></button>
         </div>
-
         <div class="boost-card">
-            <div class="boost-info"><div>Energy Max</div><span id="max-lvl">Lvl: 1</span></div>
-            <button class="buy-btn" onclick="buyItem('max', 500)">500 $ZNT</button>
+            <div class="boost-info"><div>Energy Limit</div><span id="e-lvl">Lvl 1</span></div>
+            <button class="buy-btn" onclick="buy('max')"><span id="e-cost">500</span></button>
         </div>
-
         <div class="boost-card">
-            <div class="boost-info"><div>Auto-Bot</div><span>Майнит сам</span></div>
-            <button class="buy-btn" onclick="buyItem('bot', 1000)">1000 $ZNT</button>
+            <div class="boost-info"><div>Auto-Bot</div><span id="b-lvl">Lvl 0</span></div>
+            <button class="buy-btn" onclick="buy('bot')"><span id="b-cost">1000</span></button>
         </div>
+        <button onclick="hideAllContainers(); showContainer('main-game'); document.getElementById('nav-mine').classList.add('active');" style="margin-top:30px; color:#ff4545; background:none; border:none; font-weight:bold;">CLOSE</button>
+    </div>
 
-        <button onclick="toggleShop(false)" style="margin-top:40px; color:#ff4545; background:none; border:none; font-weight:bold; font-size:18px;">ЗАКРЫТЬ МЕНЮ</button>
+    <div id="friends-container">
+        <div class="section-header">FRIENDS</div>
+        <div class="friends-link-box">
+            <div style="font-weight:bold; margin-bottom:10px;">Пригласи друга и получи 5000 $ZNT!</div>
+            <div id="referral-link">Загрузка...</div>
+            <button class="copy-btn" onclick="copyReferralLink()">КОПИРОВАТЬ</button>
+        </div>
+        <div style="font-size:12px; opacity:0.7; margin-top:20px;">Приглашено: <span id="friends-count">0</span></div>
+        <button onclick="hideAllContainers(); showContainer('main-game'); document.getElementById('nav-mine').classList.add('active');" style="margin-top:30px; color:#ff4545; background:none; border:none; font-weight:bold;">ЗАКРЫТЬ</button>
     </div>
 
     <div class="nav">
-        <button class="nav-item active" id="nav-mine" onclick="toggleShop(false)">
-            <span style="font-size:24px">💰</span><span>MINE</span>
+        <button class="nav-item active" id="nav-mine" onclick="hideAllContainers(); showContainer('main-game'); this.classList.add('active'); document.getElementById('nav-boosts').classList.remove('active'); document.getElementById('nav-friends').classList.remove('active');">
+            💰<span>MINE</span>
         </button>
-        <button class="nav-item" id="nav-boosts" onclick="toggleShop(true)">
-            <span style="font-size:24px">🚀</span><span>BOOSTS</span>
+        <button class="nav-item" id="nav-boosts" onclick="hideAllContainers(); showContainer('shop-container'); this.classList.add('active'); document.getElementById('nav-mine').classList.remove('active'); document.getElementById('nav-friends').classList.remove('active');">
+            🚀<span>BOOSTS</span>
+        </button>
+        <button class="nav-item" id="nav-friends" onclick="hideAllContainers(); showContainer('friends-container'); this.classList.add('active'); document.getElementById('nav-mine').classList.remove('active'); document.getElementById('nav-boosts').classList.remove('active');">
+            👥<span>FRIENDS</span>
         </button>
     </div>
 
@@ -79,45 +110,85 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let bal = parseFloat(localStorage.getItem('z7_bal')) || 0;
-        let en = parseFloat(localStorage.getItem('z7_en')) || 1000;
-        let m_en = parseFloat(localStorage.getItem('z7_m_en')) || 1000;
-        let pow = parseFloat(localStorage.getItem('z7_pow')) || 1;
-        let bot = parseFloat(localStorage.getItem('z7_bot')) || 0;
+        let bal = parseFloat(localStorage.getItem('z9_bal')) || 0;
+        let en = parseFloat(localStorage.getItem('z9_en')) || 1000;
+        let m_en = parseFloat(localStorage.getItem('z9_m_en')) || 1000;
+        let pow = parseInt(localStorage.getItem('z9_pow')) || 1;
+        let bot = parseFloat(localStorage.getItem('z9_bot')) || 0;
+        let invited = parseInt(localStorage.getItem('z9_invited')) || 0;
+        let hasInvitedBonus = localStorage.getItem('z9_has_invited_bonus') === 'true' || false;
 
-        function refresh() {
+        const mainGameContainer = document.querySelector('body'); 
+
+        function refreshUI() {
             document.getElementById('score').innerText = Math.floor(bal);
             document.getElementById('e-val').innerText = Math.floor(en);
             document.getElementById('e-max').innerText = m_en;
             document.getElementById('bar-fill').style.width = (en/m_en*100) + "%";
-            document.getElementById('pow-lvl').innerText = "Power: " + pow;
-            document.getElementById('max-lvl').innerText = "Limit: " + m_en;
-            document.getElementById('passive-info').innerText = "Passive: " + bot.toFixed(1) + "/sec";
+            document.getElementById('passive-info').innerText = "+" + bot.toFixed(1) + " / sec";
+            document.getElementById('friends-count').innerText = invited;
             
-            localStorage.setItem('z7_bal', bal);
-            localStorage.setItem('z7_en', en);
-            localStorage.setItem('z7_m_en', m_en);
-            localStorage.setItem('z7_pow', pow);
-            localStorage.setItem('z7_bot', bot);
+            // Цены и уровни
+            let pCost = pow * 500;
+            let eCost = (m_en/500) * 500;
+            let bCost = (bot === 0) ? 1000 : Math.floor((bot * 2 + 1) * 1000);
+            
+            document.getElementById('p-cost').innerText = pCost;
+            document.getElementById('e-cost').innerText = eCost;
+            document.getElementById('b-cost').innerText = bCost;
+            document.getElementById('p-lvl').innerText = "Lvl " + pow;
+            document.getElementById('e-lvl').innerText = "Lvl " + (m_en/500);
+            document.getElementById('b-lvl').innerText = "Lvl " + bot.toFixed(1);
+
+            // Лига
+            let league = "BRONZE"; let color = "#00f3ff"; let prog = (bal/5000)*100;
+            if(bal >= 5000) { league="SILVER"; color="#c0c0c0"; prog=((bal-5000)/20000)*100; }
+            if(bal >= 25000) { league="GOLD"; color="#ffd700"; prog=((bal-25000)/75000)*100; }
+            if(bal >= 100000) { league="DIAMOND"; color="#b9f2ff"; prog=100; }
+            
+            document.getElementById('league-name').innerText = league;
+            document.getElementById('league-name').style.color = color;
+            document.getElementById('league-fill').style.background = color;
+            document.getElementById('league-fill').style.width = Math.min(prog, 100) + "%";
+            document.getElementById('score').style.textShadow = "0 0 20px " + color;
+
+            localStorage.setItem('z9_bal', bal);
+            localStorage.setItem('z9_en', en);
+            localStorage.setItem('z9_m_en', m_en);
+            localStorage.setItem('z9_pow', pow);
+            localStorage.setItem('z9_bot', bot);
+            localStorage.setItem('z9_invited', invited);
+            localStorage.setItem('z9_has_invited_bonus', hasInvitedBonus);
         }
 
-        function toggleShop(show) {
-            document.getElementById('shop-container').style.display = show ? 'flex' : 'none';
-            document.getElementById('nav-mine').classList.toggle('active', !show);
-            document.getElementById('nav-boosts').classList.toggle('active', show);
+        function hideAllContainers() {
+            document.getElementById('shop-container').style.display = 'none';
+            document.getElementById('friends-container').style.display = 'none';
+            document.getElementById('nav-mine').classList.remove('active');
+            document.getElementById('nav-boosts').classList.remove('active');
+            document.getElementById('nav-friends').classList.remove('active');
         }
 
-        function buyItem(type, cost) {
-            if(bal >= cost) {
-                bal -= cost;
-                if(type === 'pow') pow += 1;
-                if(type === 'max') { m_en += 500; en = m_en; }
-                if(type === 'bot') bot += 0.5;
-                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-                refresh();
+        function showContainer(containerId) {
+            if (containerId === 'main-game') {
+                // Главная игра всегда отображается, когда другие скрыты
             } else {
-                tg.showAlert('Недостаточно $ZNT!');
+                document.getElementById(containerId).style.display = 'flex';
             }
+        }
+
+        function buy(type) {
+            let pCost = pow * 500;
+            let eCost = (m_en/500) * 500;
+            let bCost = (bot === 0) ? 1000 : Math.floor((bot * 2 + 1) * 1000);
+
+            if(type==='pow' && bal >= pCost) { bal -= pCost; pow++; }
+            else if(type==='max' && bal >= eCost) { bal -= eCost; m_en += 500; en = m_en; }
+            else if(type==='bot' && bal >= bCost) { bal -= bCost; bot += 0.5; }
+            else { tg.showAlert("Недостаточно $ZNT!"); return; }
+            
+            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            refreshUI();
         }
 
         document.getElementById('main-btn').addEventListener('touchstart', (e) => {
@@ -126,7 +197,7 @@
                 bal += pow; en -= pow;
                 if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
                 showAnim(e.touches[0].clientX, e.touches[0].clientY);
-                refresh();
+                refreshUI();
             }
         });
 
@@ -138,14 +209,58 @@
             setTimeout(() => el.remove(), 600);
         }
 
-        // Цикл игры: Регенерация + Автобот
+        // Referral System Logic
+        function generateReferralLink() {
+            if (tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
+                const userId = tg.initDataUnsafe.user.id;
+                // Замени @YourBotUsername на имя твоего бота в Telegram
+                return `https://t.me/zenithclicker_bot/game?startapp=ref_${userId}`;
+            }
+            return "Не удалось сгенерировать ссылку. Запустите бота из Telegram.";
+        }
+
+        function copyReferralLink() {
+            const link = document.getElementById('referral-link').innerText;
+            navigator.clipboard.writeText(link).then(() => {
+                tg.showAlert('Ссылка скопирована!');
+            }).catch(err => {
+                tg.showAlert('Ошибка копирования.');
+            });
+        }
+
+        // Check for referral code on app start
+        function checkReferral() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const startParam = urlParams.get('startapp');
+            if (startParam && startParam.startsWith('ref_') && tg.initDataUnsafe.user && !hasInvitedBonus) {
+                const referrerId = startParam.substring(4);
+                if (referrerId !== String(tg.initDataUnsafe.user.id)) {
+                    bal += 5000; // Бонус приглашенному
+                    invited += 1; // Увеличиваем счетчик у пригласившего (для демонстрации)
+                    hasInvitedBonus = true; // Отмечаем, что бонус получен
+                    tg.showAlert(`Бонус 5000 $ZNT за приглашение от ${referrerId}!`);
+                    // В реальной игре здесь нужно отправить запрос на сервер рефереру
+                }
+            }
+        }
+
+        // Game loop
         setInterval(() => {
             if(en < m_en) en = Math.min(m_en, en + 3);
             if(bot > 0) bal += bot;
-            refresh();
+            refreshUI();
         }, 1000);
-
-        refresh();
+        
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshUI();
+            checkReferral();
+            document.getElementById('referral-link').innerText = generateReferralLink();
+            // Показываем главную игру по умолчанию
+            hideAllContainers();
+            showContainer('main-game'); 
+            document.getElementById('nav-mine').classList.add('active');
+        });
     </script>
 </body>
 </html>
