@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Zenith Clicker</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --blue: #00f3ff; --bg: #020205; --card: rgba(255,255,255,0.07); }
@@ -16,17 +17,27 @@
         .header-simple { text-align: center; pointer-events: none; width: 100%; }
         .supply-mini { color: #ff4545; font-size: 11px; opacity: 0.8; letter-spacing: 1px; }
 
-        #score { font-size: 64px; font-weight: 900; text-shadow: 0 0 20px var(--blue); margin: 10px 0; }
+        #score { font-size: 64px; font-weight: 900; text-shadow: 0 0 20px var(--blue); margin: 10px 0; transition: transform 0.05s; }
 
         #main-btn { 
             width: 250px; height: 250px; border-radius: 50%; 
-            background: radial-gradient(circle, var(--blue) 0%, transparent 70%); 
+            background: radial-gradient(circle, var(--blue) 0%, transparent 75%); 
             border: 4px solid var(--blue); display: flex; align-items: center; 
             justify-content: center; font-size: 120px; touch-action: manipulation; 
-            transition: transform 0.05s; -webkit-tap-highlight-color: transparent;
+            transition: transform 0.05s, box-shadow 0.1s; -webkit-tap-highlight-color: transparent;
             outline: none; z-index: 5; color: white; font-weight: 900;
         }
-        #main-btn:active { transform: scale(0.92); }
+        #main-btn:active { transform: scale(0.95); box-shadow: 0 0 40px rgba(0,243,255,0.4); }
+
+        .tap-number {
+            position: absolute; color: white; font-size: 32px; font-weight: 900;
+            pointer-events: none; animation: flyUp 0.6s ease-out forwards;
+            z-index: 1000; text-shadow: 0 0 10px var(--blue);
+        }
+        @keyframes flyUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-120px) scale(1.5); opacity: 0; }
+        }
 
         .energy-section { width: 85%; text-align: center; }
         .en-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
@@ -44,18 +55,13 @@
             width: 100%; padding: 15px; border-radius: 15px; margin-bottom: 12px; 
             display: flex; justify-content: space-between; align-items: center; box-sizing: border-box;
         }
-        .card-info span { display: block; font-size: 15px; font-weight: bold; }
-        .card-info small { color: #888; font-size: 11px; }
         .btn-buy { background: var(--blue); color: #000; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; min-width: 80px; }
 
         .nav { 
             position: fixed; bottom: 0; width: 100%; height: 80px; 
             background: #0a0a0f; display: flex; border-top: 1px solid rgba(0,243,255,0.2); z-index: 200; 
         }
-        .nav-item { 
-            flex: 1; display: flex; flex-direction: column; align-items: center; 
-            justify-content: center; font-size: 10px; color: #555; background: none; border: none; outline: none; 
-        }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #555; background: none; border: none; }
         .nav-item.active { color: var(--blue); }
         .nav-item span { font-size: 20px; margin-bottom: 4px; }
     </style>
@@ -78,52 +84,37 @@
 
     <div id="ui-boosts" class="overlay">
         <h2>BOOSTS</h2>
-        
         <div class="card">
-            <div class="card-info">
-                <span>Multi-Tap</span>
-                <small id="pow-lvl">Lvl 1 (+1 к клику)</small>
-            </div>
+            <div><span>Multi-Tap</span><br><small id="pow-lvl">Lvl 1</small></div>
             <button class="btn-buy" onclick="buyUpgrade('pow')"><span id="pow-cost">500</span> 💰</button>
         </div>
-
         <div class="card">
-            <div class="card-info">
-                <span>Energy Cap</span>
-                <small id="en-lvl">Lvl 1 (+500 лимит)</small>
-            </div>
+            <div><span>Energy Cap</span><br><small id="en-lvl">Lvl 1</small></div>
             <button class="btn-buy" onclick="buyUpgrade('en')"><span id="en-cost">1000</span> 💰</button>
         </div>
-
         <div class="card">
-            <div class="card-info">
-                <span>Auto-Bot</span>
-                <small id="bot-lvl">Lvl 0 (Спит)</small>
-            </div>
+            <div><span>Auto-Bot</span><br><small id="bot-lvl">Lvl 0</small></div>
             <button class="btn-buy" onclick="buyUpgrade('bot')"><span id="bot-cost">5000</span> 💰</button>
         </div>
-
-        <button onclick="closeUI()" style="margin-top:20px; color:#555; background:none; border:none; padding: 20px;">ВЕРНУТЬСЯ В МАЙНИНГ</button>
+        <button onclick="closeUI()" style="margin-top:20px; color:red; background:none; border:none; padding:20px;">ВЕРНУТЬСЯ</button>
     </div>
 
     <div id="ui-tasks" class="overlay">
         <h2>TASKS</h2>
         <div class="card">
-            <div class="card-info"><span>Join Zenith Forum</span><small>+1000 $ZNT</small></div>
+            <div><span>Join Zenith Forum</span><br><small>+1000 $ZNT</small></div>
             <button class="btn-buy" onclick="tg.openTelegramLink('https://t.me/zenith_forum')">GO</button>
         </div>
-        <button onclick="closeUI()" style="margin-top:auto; color:#555; background:none; border:none; padding: 20px;">ВЕРНУТЬСЯ</button>
+        <button onclick="closeUI()" style="margin-top:auto; color:red; background:none; border:none; padding:20px;">ВЕРНУТЬСЯ</button>
     </div>
 
     <div id="ui-friends" class="overlay">
         <h2>FRIENDS</h2>
-        <div class="card" style="justify-content:center; text-align:center;">
-            <div>
-                <p>Приглашай друзей и получай<br><b style="color:var(--blue)">10% от их добычи!</b></p>
-                <button class="btn-buy" style="width:100%" onclick="tg.openTelegramLink('https://t.me/share/url?url=t.me/ТВОЙ_БОТ')">ПРИГЛАСИТЬ</button>
-            </div>
+        <div class="card" style="text-align:center; flex-direction:column; gap:15px;">
+            <p>Зови друзей и получай 10% от их добычи!</p>
+            <button class="btn-buy" style="width:100%" onclick="shareInvite()">ПРИГЛАСИТЬ ДРУГА</button>
         </div>
-        <button onclick="closeUI()" style="margin-top:auto; color:#555; background:none; border:none; padding: 20px;">ВЕРНУТЬСЯ</button>
+        <button onclick="closeUI()" style="margin-top:auto; color:red; background:none; border:none; padding:20px;">ВЕРНУТЬСЯ</button>
     </div>
 
     <div class="nav">
@@ -137,7 +128,6 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Загрузка данных
         let bal = parseFloat(localStorage.getItem('zen_bal')) || 0;
         let en = parseInt(localStorage.getItem('zen_en')) || 1000;
         let max_en = parseInt(localStorage.getItem('zen_max_en')) || 1000;
@@ -151,16 +141,13 @@
             document.getElementById('en-fill').style.width = (en/max_en*100) + "%";
             document.getElementById('s-val').innerText = (1000000000 - Math.floor(bal)).toLocaleString();
             
-            // Обновление цен и уровней в магазине
-            document.getElementById('pow-lvl').innerText = "Lvl " + power + " (+" + power + " к клику)";
+            document.getElementById('pow-lvl').innerText = "Lvl " + power + " (+" + power + ")";
             document.getElementById('pow-cost').innerText = power * 500;
-            
-            document.getElementById('en-lvl').innerText = "Lvl " + (max_en/500 - 1) + " (" + max_en + " макс)";
+            document.getElementById('en-lvl').innerText = "Lvl " + (max_en/500 - 1) + " (" + max_en + " max)";
             document.getElementById('en-cost').innerText = (max_en/500) * 1000;
-            
-            document.getElementById('bot-lvl').innerText = bot_lvl > 0 ? "Lvl " + bot_lvl + " (майнит " + bot_lvl + "/сек)" : "Lvl 0 (Спит)";
+            document.getElementById('bot-lvl').innerText = "Lvl " + bot_lvl;
             document.getElementById('bot-cost').innerText = (bot_lvl + 1) * 5000;
-            document.getElementById('bot-status').innerText = bot_lvl > 0 ? "🤖 Авто-бот работает: +" + bot_lvl + " $ZNT/сек" : "";
+            document.getElementById('bot-status').innerText = bot_lvl > 0 ? "🤖 Бот работает: +" + bot_lvl + "/сек" : "";
 
             localStorage.setItem('zen_bal', bal);
             localStorage.setItem('zen_en', en);
@@ -169,56 +156,62 @@
             localStorage.setItem('zen_bot_lvl', bot_lvl);
         }
 
-        function openUI(uiId, navId) {
-            document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(uiId).style.display = 'flex';
-            document.getElementById(navId).classList.add('active');
+        function shareInvite() {
+            const bot_username = "Zenith_Click_Bot"; 
+            const user_id = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "0";
+            const share_url = "https://t.me/share/url?url=" + 
+                encodeURIComponent("https://t.me/" + bot_username + "?start=ref_" + user_id) + 
+                "&text=" + encodeURIComponent("Бро, заходи в Zenith Clicker! Майни $ZNT со мной, пока всё не разобрали! 🚀📈");
+            tg.openTelegramLink(share_url);
         }
 
-        function closeUI() {
-            document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById('nav-mine').classList.add('active');
+        function spawnNumber(x, y) {
+            const num = document.createElement('div');
+            num.className = 'tap-number';
+            num.innerText = '+' + power;
+            num.style.left = (x - 20) + 'px';
+            num.style.top = (y - 40) + 'px';
+            document.body.appendChild(num);
+            setTimeout(() => num.remove(), 600);
         }
 
-        function buyUpgrade(type) {
-            if (type === 'pow') {
-                let cost = power * 500;
-                if (bal >= cost) { bal -= cost; power++; finishBuy(); } else { tg.showAlert('Мало монет!'); }
-            }
-            if (type === 'en') {
-                let cost = (max_en/500) * 1000;
-                if (bal >= cost) { bal -= cost; max_en += 500; finishBuy(); } else { tg.showAlert('Мало монет!'); }
-            }
-            if (type === 'bot') {
-                let cost = (bot_lvl + 1) * 5000;
-                if (bal >= cost) { bal -= cost; bot_lvl++; finishBuy(); } else { tg.showAlert('Мало монет!'); }
-            }
-        }
-
-        function finishBuy() {
-            tg.HapticFeedback.notificationOccurred('success');
-            refresh();
-        }
-
-        // КЛИК
         document.getElementById('main-btn').addEventListener('touchstart', (e) => {
             e.preventDefault();
             if(en >= power) {
-                bal += power;
-                en -= power;
-                tg.HapticFeedback.impactOccurred('medium');
+                bal += power; en -= power;
+                document.getElementById('score').style.transform = 'scale(1.1)';
+                setTimeout(() => document.getElementById('score').style.transform = 'scale(1)', 50);
+                spawnNumber(e.touches[0].clientX, e.touches[0].clientY);
+                tg.HapticFeedback.impactOccurred('light');
                 refresh();
             }
         });
 
-        // Реген энергии и работа бота
+        function buyUpgrade(type) {
+            if (type === 'pow' && bal >= power * 500) { bal -= power * 500; power++; finishBuy(); }
+            else if (type === 'en' && bal >= (max_en/500) * 1000) { bal -= (max_en/500) * 1000; max_en += 500; finishBuy(); }
+            else if (type === 'bot' && bal >= (bot_lvl + 1) * 5000) { bal -= (bot_lvl + 1) * 5000; bot_lvl++; finishBuy(); }
+            else { tg.showAlert("Не хватает $ZNT!"); }
+        }
+
+        function finishBuy() { tg.HapticFeedback.notificationOccurred('success'); refresh(); }
+        
+        function openUI(ui, nav) { 
+            document.querySelectorAll('.overlay').forEach(e => e.style.display='none');
+            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+            document.getElementById(ui).style.display='flex';
+            document.getElementById(nav).classList.add('active');
+        }
+        
+        function closeUI() { 
+            document.querySelectorAll('.overlay').forEach(e => e.style.display='none');
+            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+            document.getElementById('nav-mine').classList.add('active');
+        }
+
         setInterval(() => { 
-            // Реген
-            if(en < max_en) { en = Math.min(max_en, en + 2); }
-            // Бот
-            if(bot_lvl > 0) { bal += bot_lvl; }
+            if(en < max_en) en = Math.min(max_en, en + 2); 
+            if(bot_lvl > 0) bal += bot_lvl;
             refresh();
         }, 1000);
 
