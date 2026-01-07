@@ -165,16 +165,29 @@
         }
 
         function doTask(id, reward) {
-            // Тут можно вставить реальную ссылку: window.open('https://t.me/твой_канал');
-            tg.showConfirm("Вы выполнили задание?", (ok) => {
-                if(ok) {
-                    bal += reward;
-                    doneTasks.push(id);
-                    tg.showAlert("Получено " + reward + " $ZNT!");
-                    refresh();
-                }
-            });
-        }
+    let url = "";
+    
+    // ВСТАВЬ СВОИ ССЫЛКИ ТУТ
+    if(id === 'sub') url = "https://t.me/твой_канал"; // Ссылка на канал
+    if(id === 'chat') url = "https://t.me/твой_чат";  // Ссылка на чат
+
+    // Открываем ссылку
+    tg.openTelegramLink(url);
+
+    // Показываем подтверждение через небольшую паузу, чтобы игрок успел перейти
+    setTimeout(() => {
+        tg.showConfirm("Вы подписались на ресурс?", (ok) => {
+            if(ok) {
+                bal += reward;
+                doneTasks.push(id);
+                tg.HapticFeedback.notificationOccurred('success');
+                tg.showAlert("Поздравляем! + " + reward + " $ZNT зачислено!");
+                refresh();
+            }
+        });
+    }, 2000);
+}
+
 
         document.getElementById('main-btn').addEventListener('touchstart', (e) => {
             e.preventDefault();
