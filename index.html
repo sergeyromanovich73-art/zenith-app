@@ -10,180 +10,142 @@
             --neon-purple: #9d00ff;
             --neon-pink: #ff0055;
             --bg-dark: #020205;
-            --glass-bg: rgba(255, 255, 255, 0.03);
             --glass-border: rgba(0, 243, 255, 0.2);
         }
 
         body {
-            background: var(--bg-dark);
-            color: white;
-            font-family: 'Arial', sans-serif;
+            background: var(--bg-dark); color: white; font-family: sans-serif;
             display: flex; flex-direction: column; align-items: center; 
-            height: 100vh; margin: 0; overflow: hidden;
-            padding-top: 60px; padding-bottom: 100px; box-sizing: border-box;
+            height: 100vh; margin: 0; overflow: hidden; justify-content: space-between;
+            padding: 60px 0 100px 0; box-sizing: border-box;
         }
 
-        .cyber-grid {
-            position: fixed; width: 200%; height: 200%; top: -50%; left: -50%;
-            background-image: linear-gradient(rgba(0, 243, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 243, 255, 0.1) 1px, transparent 1px);
-            background-size: 50px 50px; transform: perspective(500px) rotateX(60deg);
-            animation: gridMove 20s linear infinite; z-index: -2; opacity: 0.3;
+        /* Энергия вверху */
+        .energy-container {
+            width: 80%; background: rgba(255,255,255,0.05);
+            border-radius: 10px; height: 12px; border: 1px solid var(--glass-border);
+            overflow: hidden; position: relative;
         }
-        @keyframes gridMove { 0% { background-position: 0 0; } 100% { background-position: 0 500px; } }
-        
-        .glass-panel {
-            background: var(--glass-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border: 1px solid var(--glass-border); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        #energy-bar {
+            width: 100%; height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            transition: width 0.3s;
         }
+        .energy-text { font-size: 12px; margin-top: 5px; color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
 
         .header {
             position: fixed; top: 0; left: 0; right: 0; height: 50px;
             padding: 0 20px; display: flex; justify-content: space-between; align-items: center;
-            z-index: 10; border-bottom: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.03); backdrop-filter: blur(10px); border-bottom: 1px solid var(--glass-border);
         }
         
-        #menu-btn { font-size: 16px; background: none; border: none; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); font-weight: bold; }
-        .user-id { color: #aaa; font-size: 11px; font-family: monospace; }
+        #score { font-size: 50px; font-weight: 900; margin: 10px 0; text-shadow: 0 0 20px var(--neon-blue); }
 
-        .main-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; width: 100%; }
-        #score-container { text-align: center; }
-        .token-label { color: var(--neon-blue); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; }
-        #score {
-            font-size: 60px; font-weight: 900; margin: 0;
-            background: linear-gradient(to bottom, white, var(--neon-blue));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 15px rgba(0, 243, 255, 0.6));
-        }
-
-        .core-wrapper { position: relative; width: 220px; height: 220px; display: flex; align-items: center; justify-content: center; }
-        .core-ring-outer { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px dashed var(--neon-purple); animation: rotate 20s linear infinite; opacity: 0.5; }
         #main-btn {
-            width: 140px; height: 140px; border-radius: 50%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1), rgba(0, 243, 255, 0.3));
-            display: flex; align-items: center; justify-content: center;
-            font-size: 80px; font-weight: 900; color: white;
-            text-shadow: 0 0 30px var(--neon-blue); z-index: 5;
+            width: 180px; height: 180px; border-radius: 50%;
+            background: radial-gradient(circle, var(--neon-blue) 0%, transparent 70%);
+            border: 4px solid var(--neon-blue); display: flex; align-items: center; justify-content: center;
+            font-size: 80px; box-shadow: 0 0 40px rgba(0, 243, 255, 0.2);
             transition: transform 0.05s; -webkit-tap-highlight-color: transparent;
         }
-        #main-btn:active { transform: scale(0.92); }
-        @keyframes rotate { 100% { transform: rotate(360deg); } }
+        #main-btn:active { transform: scale(0.95); }
+        #main-btn.disabled { filter: grayscale(1); opacity: 0.5; }
 
+        .tap-anim { position: absolute; color: var(--neon-blue); font-weight: bold; animation: flyUp 0.8s forwards; font-size: 28px; pointer-events: none; }
+        @keyframes flyUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
+
+        .footer-panel { position: fixed; bottom: 20px; width: 90%; display: flex; justify-content: center; }
         #shop-btn {
-            padding: 10px 30px; border-radius: 50px; background: rgba(0,0,0,0.6);
-            border: 1px solid var(--neon-pink); color: var(--neon-pink);
-            font-size: 12px; font-weight: bold; letter-spacing: 1px;
+            padding: 12px 25px; border-radius: 10px; border: 1px solid var(--neon-pink);
+            background: none; color: var(--neon-pink); font-weight: bold;
         }
-
-        .boosts-panel {
-            position: fixed; bottom: 15px; left: 15px; right: 15px;
-            padding: 10px; border-radius: 15px; display: flex; justify-content: space-around;
-        }
-        .boost-item { display: flex; flex-direction: column; align-items: center; opacity: 0.4; transition: 0.3s; }
-        .boost-item.active { opacity: 1; color: var(--neon-pink); }
-        .boost-icon { width: 30px; height: 30px; border-radius: 8px; border: 1px solid #333; display: flex; align-items: center; justify-content: center; margin-bottom: 2px; }
-
-        .tap-anim { position: absolute; color: var(--neon-blue); font-weight: bold; pointer-events: none; animation: flyUp 0.8s forwards; font-size: 24px; z-index: 100; }
-        @keyframes flyUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px); } }
     </style>
 </head>
 <body>
 
-    <div class="cyber-grid"></div>
-
-    <div class="header glass-panel">
-        <button id="menu-btn">☰ ZENITH.APP</button>
-        <div class="user-id" id="user-id-display">ID: LOADING...</div>
+    <div class="header">
+        <span id="user-name">ZENITH</span>
+        <span style="font-size: 10px; opacity: 0.5;" id="user-id">ID: ---</span>
     </div>
 
-    <div class="main-content">
-        <div id="score-container">
-            <span class="token-label">Balance $ZNT</span>
-            <h1 id="score">0</h1>
-            <div id="pps" style="font-size: 11px; color: var(--neon-purple)">Passive: 0/sec</div>
-        </div>
+    <div id="score">0</div>
 
-        <div class="core-wrapper">
-            <div class="core-ring-outer"></div>
-            <div id="main-btn">Z</div>
-        </div>
+    <div id="main-btn">Z</div>
 
-        <button id="shop-btn" onclick="buyAuto()">DEPLOY AUTO-BOT (100 $ZNT)</button>
+    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+        <div class="energy-container">
+            <div id="energy-bar"></div>
+        </div>
+        <div class="energy-text">⚡ <span id="energy-val">1000</span> / 1000</div>
     </div>
 
-    <div class="boosts-panel glass-panel">
-        <div class="boost-item active">
-            <div class="boost-icon">X1</div>
-            <span style="font-size: 9px;">POWER</span>
-        </div>
-        <div class="boost-item" id="b-auto">
-            <div class="boost-icon">🤖</div>
-            <span style="font-size: 9px;">AUTO</span>
-        </div>
+    <div class="footer-panel">
+        <button id="shop-btn" onclick="buyAuto()">AUTO-BOT (100 $ZNT)</button>
     </div>
 
     <script>
-        // Инициализация Telegram Web App
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Разворачиваем на весь экран
+        tg.expand();
 
-        // Получаем данные игрока
-        const user = tg.initDataUnsafe.user;
-        if (user) {
-            document.getElementById('menu-btn').innerText = `☰ ${user.first_name.toUpperCase()}.APP`;
-            document.getElementById('user-id-display').innerText = `ID: ${user.id}`;
+        let balance = parseFloat(localStorage.getItem('z_bal')) || 0;
+        let energy = parseFloat(localStorage.getItem('z_nrgy')) || 1000;
+        let autoRate = parseFloat(localStorage.getItem('z_auto')) || 0;
+        const maxEnergy = 1000;
+
+        // Настройка профиля
+        if (tg.initDataUnsafe.user) {
+            document.getElementById('user-name').innerText = tg.initDataUnsafe.user.first_name.toUpperCase() + ".APP";
+            document.getElementById('user-id').innerText = "ID: " + tg.initDataUnsafe.user.id;
         }
-
-        let balance = parseFloat(localStorage.getItem('zenith_bal')) || 0;
-        let power = 1;
-        let autoRate = parseFloat(localStorage.getItem('zenith_auto')) || 0;
-
-        const scoreEl = document.getElementById('score');
-        const ppsEl = document.getElementById('pps');
-        const btn = document.getElementById('main-btn');
 
         function updateUI() {
-            scoreEl.innerText = Math.floor(balance);
-            ppsEl.innerText = `Passive: ${autoRate.toFixed(1)}/sec`;
-            if(autoRate > 0) document.getElementById('b-auto').classList.add('active');
-            localStorage.setItem('zenith_bal', balance);
-            localStorage.setItem('zenith_auto', autoRate);
+            document.getElementById('score').innerText = Math.floor(balance);
+            document.getElementById('energy-val').innerText = Math.floor(energy);
+            document.getElementById('energy-bar').style.width = (energy / maxEnergy * 100) + "%";
+            
+            if(energy < 1) {
+                document.getElementById('main-btn').classList.add('disabled');
+            } else {
+                document.getElementById('main-btn').classList.remove('disabled');
+            }
+
+            localStorage.setItem('z_bal', balance);
+            localStorage.setItem('z_nrgy', energy);
+            localStorage.setItem('z_auto', autoRate);
         }
 
-        btn.addEventListener('touchstart', (e) => {
+        // Клик
+        document.getElementById('main-btn').addEventListener('touchstart', (e) => {
             e.preventDefault();
-            balance += power;
-            
-            // Вибрация через Telegram SDK
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
-
-            showTapAnim(e.touches[0].clientX, e.touches[0].clientY);
-            updateUI();
-        });
-
-        setInterval(() => {
-            if (autoRate > 0) {
-                balance += autoRate;
+            if (energy >= 1) {
+                balance += 1;
+                energy -= 1;
+                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+                showAnim(e.touches[0].clientX, e.touches[0].clientY);
                 updateUI();
             }
+        });
+
+        // Регенерация энергии и Авто-бот
+        setInterval(() => {
+            if (energy < maxEnergy) energy = Math.min(maxEnergy, energy + 1);
+            if (autoRate > 0) balance += autoRate;
+            updateUI();
         }, 1000);
 
         function buyAuto() {
             if (balance >= 100) {
                 balance -= 100;
                 autoRate += 0.5;
-                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
                 updateUI();
             } else {
-                tg.showAlert("Need 100 $ZNT!");
+                tg.showAlert("Not enough $ZNT!");
             }
         }
 
-        function showTapAnim(x, y) {
+        function showAnim(x, y) {
             const el = document.createElement('div');
             el.className = 'tap-anim';
-            el.innerText = `+${power}`;
+            el.innerText = '+1';
             el.style.left = x + 'px';
             el.style.top = y + 'px';
             document.body.appendChild(el);
