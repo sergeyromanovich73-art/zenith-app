@@ -1,66 +1,174 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #020205; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
-        #score { font-size: 50px; font-weight: bold; margin-bottom: 20px; color: #00f3ff; text-shadow: 0 0 15px #00f3ff; }
-        #btn-main { width: 200px; height: 200px; border-radius: 50%; background: #00f3ff; border: none; font-size: 80px; font-weight: bold; color: #020205; box-shadow: 0 0 30px #00f3ff; touch-action: manipulation; }
-        .nav { position: fixed; bottom: 0; width: 100%; height: 70px; display: flex; justify-content: space-around; background: rgba(255,255,255,0.05); border-top: 1px solid #00f3ff; }
-        .nav-btn { background: none; border: none; color: #00f3ff; font-weight: bold; font-size: 16px; width: 50%; }
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-purple: #9d00ff;
+            --bg-dark: #020205;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+        body {
+            background: var(--bg-dark); color: white; font-family: sans-serif;
+            display: flex; flex-direction: column; align-items: center; 
+            height: 100vh; margin: 0; overflow: hidden; justify-content: space-between;
+            padding: 40px 0 90px 0; box-sizing: border-box;
+        }
+        /* Header & League */
+        .header { position: fixed; top: 0; width: 100%; padding: 10px 20px; display: flex; justify-content: space-between; background: var(--glass); backdrop-filter: blur(10px); z-index: 10; border-bottom: 1px solid rgba(0,243,255,0.1); box-sizing: border-box; }
+        .league-box { width: 90%; text-align: center; margin-top: 20px; }
+        #league-name { font-size: 14px; font-weight: bold; letter-spacing: 2px; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
+        .level-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 8px; overflow: hidden; }
+        #level-bar-fill { width: 0%; height: 100%; background: var(--neon-blue); transition: 0.5s; }
+
+        /* Game Elements */
+        #score { font-size: 64px; font-weight: 900; text-shadow: 0 0 20px var(--neon-blue); margin: 20px 0; }
+        #main-btn {
+            width: 230px; height: 230px; border-radius: 50%;
+            background: radial-gradient(circle, var(--neon-blue) 0%, transparent 70%);
+            border: 4px solid var(--neon-blue); display: flex; align-items: center; justify-content: center;
+            font-size: 100px; text-shadow: 0 0 20px white; transition: transform 0.05s;
+            touch-action: manipulation; user-select: none;
+        }
+        #main-btn:active { transform: scale(0.95); }
+
+        /* Energy */
+        .energy-box { width: 85%; display: flex; flex-direction: column; align-items: center; }
+        .energy-bar-bg { width: 100%; height: 12px; background: var(--glass); border-radius: 20px; border: 1px solid rgba(0,243,255,0.2); overflow: hidden; }
+        #energy-fill { width: 100%; height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)); transition: 0.2s; }
+
+        /* Bottom Menu */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; height: 80px;
+            background: rgba(10, 10, 15, 0.95); display: flex; justify-content: space-around;
+            align-items: center; border-top: 1px solid var(--neon-blue); padding-bottom: 10px;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 11px; border: none; background: none; cursor: pointer; }
+        .nav-item.active { color: var(--neon-blue); }
+
+        /* Animations */
+        .tap-anim { position: absolute; color: var(--neon-blue); font-weight: bold; animation: fly 0.7s forwards; pointer-events: none; font-size: 32px; z-index: 100; }
+        @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
     </style>
 </head>
 <body>
 
-    <div id="score">0</div>
-    <button id="btn-main">Z</button>
+    <div class="header">
+        <span id="u-name">ZENITH.APP</span>
+        <span style="opacity: 0.5; font-size: 10px;">ID: <span id="u-id">---</span></span>
+    </div>
 
-    <div class="nav">
-        <button class="nav-btn" onclick="location.reload()">ОБНОВИТЬ</button>
-        <button class="nav-btn" id="boost-trigger">МАГАЗИН 🚀</button>
+    <div class="league-box">
+        <div id="league-name">BRONZE LEAGUE</div>
+        <div class="level-bar-bg"><div id="level-bar-fill"></div></div>
+    </div>
+
+    <div id="score">0</div>
+
+    <button id="main-btn">Z</button>
+
+    <div class="energy-box">
+        <div class="energy-bar-bg"><div id="energy-fill"></div></div>
+        <div style="margin-top: 8px; font-weight: bold; font-size: 14px;">⚡ <span id="e-val">1000</span> / <span id="e-max">1000</span></div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="location.reload()"><span style="font-size:24px">💰</span><span>MINE</span></div>
+        <div class="nav-item" id="open-shop"><span style="font-size:24px">🚀</span><span>BOOSTS</span></div>
+        <div class="nav-item" onclick="tg.showAlert('Coming Soon!')"><span style="font-size:24px">📊</span><span>STATS</span></div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let bal = parseFloat(localStorage.getItem('v4_bal')) || 0;
-        const scoreEl = document.getElementById('score');
-        scoreEl.innerText = Math.floor(bal);
+        // Загрузка данных
+        let balance = parseFloat(localStorage.getItem('zen_bal')) || 0;
+        let energy = parseFloat(localStorage.getItem('zen_en')) || 1000;
+        let maxEnergy = parseFloat(localStorage.getItem('zen_max_en')) || 1000;
+        let power = parseFloat(localStorage.getItem('zen_pow')) || 1;
+        let auto = parseFloat(localStorage.getItem('zen_auto')) || 0;
 
-        // Клик
-        document.getElementById('btn-main').addEventListener('touchstart', (e) => {
+        if (tg.initDataUnsafe.user) {
+            document.getElementById('u-name').innerText = tg.initDataUnsafe.user.first_name.toUpperCase() + ".APP";
+            document.getElementById('u-id').innerText = tg.initDataUnsafe.user.id;
+        }
+
+        function updateUI() {
+            document.getElementById('score').innerText = Math.floor(balance);
+            document.getElementById('e-val').innerText = Math.floor(energy);
+            document.getElementById('e-max').innerText = maxEnergy;
+            document.getElementById('energy-fill').style.width = (energy / maxEnergy * 100) + "%";
+
+            // Лиги
+            let l = "BRONZE"; let c = "#00f3ff"; let p = (balance/5000)*100;
+            if(balance >= 5000) { l="SILVER"; c="#C0C0C0"; p=((balance-5000)/20000)*100; }
+            if(balance >= 25000) { l="GOLD"; c="#FFD700"; p=((balance-25000)/75000)*100; }
+            if(balance >= 100000) { l="DIAMOND"; c="#b9f2ff"; p=((balance-100000)/400000)*100; }
+
+            const ln = document.getElementById('league-name');
+            ln.innerText = l + " LEAGUE"; ln.style.color = c;
+            document.getElementById('level-bar-fill').style.background = c;
+            document.getElementById('level-bar-fill').style.width = Math.min(100, p) + "%";
+
+            // Сохранение
+            localStorage.setItem('zen_bal', balance);
+            localStorage.setItem('zen_en', energy);
+            localStorage.setItem('zen_max_en', maxEnergy);
+            localStorage.setItem('zen_pow', power);
+            localStorage.setItem('zen_auto', auto);
+        }
+
+        // Клик (Touch)
+        document.getElementById('main-btn').addEventListener('touchstart', (e) => {
             e.preventDefault();
-            bal += 1;
-            scoreEl.innerText = Math.floor(bal);
-            localStorage.setItem('v4_bal', bal);
-            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            if(energy >= power) {
+                balance += power; energy -= power;
+                if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+                const t = e.touches[0];
+                showAnim(t.clientX, t.clientY);
+                updateUI();
+            }
         });
 
         // Магазин
-        document.getElementById('boost-trigger').addEventListener('click', () => {
+        document.getElementById('open-shop').addEventListener('click', () => {
             tg.showPopup({
-                title: 'ZENITH SHOP',
-                message: 'Твой баланс: ' + Math.floor(bal),
+                title: '🚀 ZENITH BOOSTS',
+                message: `Balance: ${Math.floor(balance)} $ZNT\n\nPower: +${power}\nMax Energy: ${maxEnergy}`,
                 buttons: [
-                    {id: 'buy', type: 'default', text: 'Купить Boost (500)'},
-                    {type: 'cancel', text: 'Закрыть'}
+                    {id: 'pow', type: 'default', text: 'Multi-tap (500)'},
+                    {id: 'max', type: 'default', text: 'Energy Limit (500)'},
+                    {id: 'bot', type: 'default', text: 'Auto-Bot (1000)'},
+                    {type: 'cancel', text: 'Close'}
                 ]
             }, (id) => {
-                if (id === 'buy') {
-                    if (bal >= 500) {
-                        bal -= 500;
-                        scoreEl.innerText = Math.floor(bal);
-                        localStorage.setItem('v4_bal', bal);
-                        tg.showAlert('Куплено!');
-                    } else {
-                        tg.showAlert('Недостаточно монет!');
-                    }
-                }
+                if(id === 'pow' && balance >= 500) { balance -= 500; power += 1; tg.showAlert('Power Up!'); }
+                else if(id === 'max' && balance >= 500) { balance -= 500; maxEnergy += 500; energy = maxEnergy; tg.showAlert('Energy Up!'); }
+                else if(id === 'bot' && balance >= 1000) { balance -= 1000; auto += 1; tg.showAlert('Bot Active!'); }
+                else if(id) { tg.showAlert('Not enough $ZNT!'); }
+                updateUI();
             });
         });
+
+        function showAnim(x, y) {
+            const el = document.createElement('div');
+            el.className = 'tap-anim'; el.innerText = '+' + power;
+            el.style.left = x + 'px'; el.style.top = (y - 50) + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 700);
+        }
+
+        setInterval(() => {
+            if(energy < maxEnergy) energy = Math.min(maxEnergy, energy + 2);
+            if(auto > 0) balance += auto;
+            updateUI();
+        }, 1000);
+
+        updateUI();
     </script>
 </body>
 </html>
