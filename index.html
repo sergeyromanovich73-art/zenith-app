@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --neon-blue: #00f3ff;
@@ -19,10 +20,9 @@
             font-family: 'Arial', sans-serif;
             display: flex; flex-direction: column; align-items: center; 
             height: 100vh; margin: 0; overflow: hidden;
-            padding-top: 80px; padding-bottom: 120px; box-sizing: border-box;
+            padding-top: 60px; padding-bottom: 100px; box-sizing: border-box;
         }
 
-        /* --- ФОН И ЭФФЕКТЫ --- */
         .cyber-grid {
             position: fixed; width: 200%; height: 200%; top: -50%; left: -50%;
             background-image: linear-gradient(rgba(0, 243, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 243, 255, 0.1) 1px, transparent 1px);
@@ -37,58 +37,52 @@
         }
 
         .header {
-            position: fixed; top: 0; left: 0; right: 0; height: 60px;
+            position: fixed; top: 0; left: 0; right: 0; height: 50px;
             padding: 0 20px; display: flex; justify-content: space-between; align-items: center;
             z-index: 10; border-bottom: 1px solid var(--glass-border);
         }
         
-        #menu-btn { font-size: 20px; background: none; border: none; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
-        .user-id { color: #aaa; font-size: 12px; font-family: monospace; }
+        #menu-btn { font-size: 16px; background: none; border: none; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); font-weight: bold; }
+        .user-id { color: #aaa; font-size: 11px; font-family: monospace; }
 
-        /* --- СТАТИСТИКА --- */
         .main-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; width: 100%; }
-        #score-container { text-align: center; z-index: 2; }
-        .token-label { color: var(--neon-blue); font-size: 12px; letter-spacing: 4px; text-transform: uppercase; }
+        #score-container { text-align: center; }
+        .token-label { color: var(--neon-blue); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; }
         #score {
-            font-size: 70px; font-weight: 900; margin: 0;
+            font-size: 60px; font-weight: 900; margin: 0;
             background: linear-gradient(to bottom, white, var(--neon-blue));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.6));
+            filter: drop-shadow(0 0 15px rgba(0, 243, 255, 0.6));
         }
 
-        /* --- КНОПКА Z --- */
-        .core-wrapper { position: relative; width: 260px; height: 260px; display: flex; align-items: center; justify-content: center; }
+        .core-wrapper { position: relative; width: 220px; height: 220px; display: flex; align-items: center; justify-content: center; }
         .core-ring-outer { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px dashed var(--neon-purple); animation: rotate 20s linear infinite; opacity: 0.5; }
         #main-btn {
-            width: 160px; height: 160px; border-radius: 50%;
+            width: 140px; height: 140px; border-radius: 50%;
             background: radial-gradient(circle, rgba(255,255,255,0.1), rgba(0, 243, 255, 0.3));
             display: flex; align-items: center; justify-content: center;
-            font-size: 90px; font-weight: 900; color: white;
+            font-size: 80px; font-weight: 900; color: white;
             text-shadow: 0 0 30px var(--neon-blue); z-index: 5;
             transition: transform 0.05s; -webkit-tap-highlight-color: transparent;
         }
         #main-btn:active { transform: scale(0.92); }
-
         @keyframes rotate { 100% { transform: rotate(360deg); } }
 
-        /* --- МАГАЗИН И БУСТЫ --- */
         #shop-btn {
-            padding: 12px 40px; border-radius: 50px; background: rgba(0,0,0,0.6);
+            padding: 10px 30px; border-radius: 50px; background: rgba(0,0,0,0.6);
             border: 1px solid var(--neon-pink); color: var(--neon-pink);
-            font-size: 14px; font-weight: bold; letter-spacing: 2px;
-            box-shadow: 0 0 20px rgba(255, 0, 85, 0.2);
+            font-size: 12px; font-weight: bold; letter-spacing: 1px;
         }
 
         .boosts-panel {
-            position: fixed; bottom: 20px; left: 20px; right: 20px;
-            padding: 12px; border-radius: 20px; display: flex; justify-content: space-around;
+            position: fixed; bottom: 15px; left: 15px; right: 15px;
+            padding: 10px; border-radius: 15px; display: flex; justify-content: space-around;
         }
         .boost-item { display: flex; flex-direction: column; align-items: center; opacity: 0.4; transition: 0.3s; }
         .boost-item.active { opacity: 1; color: var(--neon-pink); }
-        .boost-icon { width: 35px; height: 35px; border-radius: 10px; border: 1px solid #333; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
+        .boost-icon { width: 30px; height: 30px; border-radius: 8px; border: 1px solid #333; display: flex; align-items: center; justify-content: center; margin-bottom: 2px; }
 
-        /* ЭФФЕКТ ТАПА */
-        .tap-anim { position: absolute; color: var(--neon-blue); font-weight: bold; pointer-events: none; animation: flyUp 0.8s forwards; }
+        .tap-anim { position: absolute; color: var(--neon-blue); font-weight: bold; pointer-events: none; animation: flyUp 0.8s forwards; font-size: 24px; z-index: 100; }
         @keyframes flyUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px); } }
     </style>
 </head>
@@ -97,15 +91,15 @@
     <div class="cyber-grid"></div>
 
     <div class="header glass-panel">
-        <button id="menu-btn" onclick="alert('Settings coming soon!')">☰ ZENITH.APP</button>
-        <div class="user-id">ID: 8008118532</div>
+        <button id="menu-btn">☰ ZENITH.APP</button>
+        <div class="user-id" id="user-id-display">ID: LOADING...</div>
     </div>
 
     <div class="main-content">
         <div id="score-container">
             <span class="token-label">Balance $ZNT</span>
             <h1 id="score">0</h1>
-            <div id="pps" style="font-size: 12px; color: var(--neon-purple)">Passive: 0/sec</div>
+            <div id="pps" style="font-size: 11px; color: var(--neon-purple)">Passive: 0/sec</div>
         </div>
 
         <div class="core-wrapper">
@@ -117,46 +111,57 @@
     </div>
 
     <div class="boosts-panel glass-panel">
-        <div class="boost-item active" id="b-x2">
+        <div class="boost-item active">
             <div class="boost-icon">X1</div>
-            <span class="boost-label">POWER</span>
+            <span style="font-size: 9px;">POWER</span>
         </div>
         <div class="boost-item" id="b-auto">
             <div class="boost-icon">🤖</div>
-            <span class="boost-label">AUTO</span>
+            <span style="font-size: 9px;">AUTO</span>
         </div>
     </div>
 
     <script>
-        // Инициализация данных (загрузка из памяти или 0)
+        // Инициализация Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Разворачиваем на весь экран
+
+        // Получаем данные игрока
+        const user = tg.initDataUnsafe.user;
+        if (user) {
+            document.getElementById('menu-btn').innerText = `☰ ${user.first_name.toUpperCase()}.APP`;
+            document.getElementById('user-id-display').innerText = `ID: ${user.id}`;
+        }
+
         let balance = parseFloat(localStorage.getItem('zenith_bal')) || 0;
-        let power = parseInt(localStorage.getItem('zenith_pwr')) || 1;
+        let power = 1;
         let autoRate = parseFloat(localStorage.getItem('zenith_auto')) || 0;
 
         const scoreEl = document.getElementById('score');
         const ppsEl = document.getElementById('pps');
         const btn = document.getElementById('main-btn');
 
-        // Обновление экрана
         function updateUI() {
             scoreEl.innerText = Math.floor(balance);
             ppsEl.innerText = `Passive: ${autoRate.toFixed(1)}/sec`;
             if(autoRate > 0) document.getElementById('b-auto').classList.add('active');
             localStorage.setItem('zenith_bal', balance);
-            localStorage.setItem('zenith_pwr', power);
             localStorage.setItem('zenith_auto', autoRate);
         }
 
-        // Клик
         btn.addEventListener('touchstart', (e) => {
             e.preventDefault();
             balance += power;
+            
+            // Вибрация через Telegram SDK
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+
             showTapAnim(e.touches[0].clientX, e.touches[0].clientY);
-            if (navigator.vibrate) navigator.vibrate(30);
             updateUI();
         });
 
-        // Авто-майнинг
         setInterval(() => {
             if (autoRate > 0) {
                 balance += autoRate;
@@ -164,19 +169,17 @@
             }
         }, 1000);
 
-        // Покупка авто-бота
         function buyAuto() {
             if (balance >= 100) {
                 balance -= 100;
                 autoRate += 0.5;
-                alert("Auto-Bot Deployed! +0.5 $ZNT/sec");
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
                 updateUI();
             } else {
-                alert("Need 100 $ZNT!");
+                tg.showAlert("Need 100 $ZNT!");
             }
         }
 
-        // Анимация вылетающих цифр
         function showTapAnim(x, y) {
             const el = document.createElement('div');
             el.className = 'tap-anim';
@@ -187,7 +190,7 @@
             setTimeout(() => el.remove(), 800);
         }
 
-        updateUI(); // Первый запуск
+        updateUI();
     </script>
 </body>
 </html>
