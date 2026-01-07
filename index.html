@@ -9,54 +9,66 @@
             --neon-blue: #00f3ff;
             --neon-purple: #9d00ff;
             --neon-pink: #ff0055;
+            --diamond: #b9f2ff;
+            --lord: #ff3e3e;
             --bg-dark: #020205;
-            --glass-border: rgba(0, 243, 255, 0.2);
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(0, 243, 255, 0.2);
         }
 
         body {
-            background: var(--bg-dark); color: white; font-family: sans-serif;
+            background: var(--bg-dark); color: white; font-family: 'Segoe UI', sans-serif;
             display: flex; flex-direction: column; align-items: center; 
             height: 100vh; margin: 0; overflow: hidden; justify-content: space-between;
-            padding: 60px 0 100px 0; box-sizing: border-box;
+            padding: 60px 0 110px 0; box-sizing: border-box;
         }
 
-        /* Энергия вверху */
-        .energy-container {
-            width: 80%; background: rgba(255,255,255,0.05);
-            border-radius: 10px; height: 12px; border: 1px solid var(--glass-border);
-            overflow: hidden; position: relative;
+        .league-header { width: 90%; text-align: center; margin-bottom: 10px; }
+        #league-name {
+            font-size: 14px; font-weight: bold; color: var(--neon-purple);
+            text-shadow: 0 0 10px var(--neon-purple); letter-spacing: 2px;
+            transition: 0.5s;
         }
-        #energy-bar {
-            width: 100%; height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
-            transition: width 0.3s;
+        .level-progress {
+            width: 100%; height: 6px; background: var(--glass);
+            border-radius: 10px; margin-top: 5px; border: 1px solid var(--border);
         }
-        .energy-text { font-size: 12px; margin-top: 5px; color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
+        #level-bar { width: 0%; height: 100%; background: var(--neon-purple); transition: 0.5s; }
 
         .header {
             position: fixed; top: 0; left: 0; right: 0; height: 50px;
             padding: 0 20px; display: flex; justify-content: space-between; align-items: center;
-            background: rgba(255,255,255,0.03); backdrop-filter: blur(10px); border-bottom: 1px solid var(--glass-border);
+            background: var(--glass); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
         }
         
-        #score { font-size: 50px; font-weight: 900; margin: 10px 0; text-shadow: 0 0 20px var(--neon-blue); }
+        #score { font-size: 55px; font-weight: 900; margin: 5px 0; text-shadow: 0 0 20px var(--neon-blue); }
 
         #main-btn {
-            width: 180px; height: 180px; border-radius: 50%;
-            background: radial-gradient(circle, var(--neon-blue) 0%, transparent 70%);
-            border: 4px solid var(--neon-blue); display: flex; align-items: center; justify-content: center;
-            font-size: 80px; box-shadow: 0 0 40px rgba(0, 243, 255, 0.2);
+            width: 200px; height: 200px; border-radius: 50%;
+            background: radial-gradient(circle, var(--neon-blue) 0%, transparent 75%);
+            border: 5px solid var(--neon-blue); display: flex; align-items: center; justify-content: center;
+            font-size: 90px; color: white; text-shadow: 0 0 30px var(--neon-blue);
+            box-shadow: 0 0 50px rgba(0, 243, 255, 0.15);
             transition: transform 0.05s; -webkit-tap-highlight-color: transparent;
         }
-        #main-btn:active { transform: scale(0.95); }
-        #main-btn.disabled { filter: grayscale(1); opacity: 0.5; }
+        #main-btn:active { transform: scale(0.94); }
+        #main-btn.disabled { filter: grayscale(1); opacity: 0.3; pointer-events: none; }
 
-        .tap-anim { position: absolute; color: var(--neon-blue); font-weight: bold; animation: flyUp 0.8s forwards; font-size: 28px; pointer-events: none; }
-        @keyframes flyUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
+        .energy-section { width: 85%; display: flex; flex-direction: column; align-items: center; }
+        .energy-bg {
+            width: 100%; height: 14px; background: var(--glass);
+            border-radius: 20px; border: 1px solid var(--border); overflow: hidden;
+        }
+        #energy-bar { width: 100%; height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)); transition: 0.2s; }
+        .energy-info { font-size: 13px; color: var(--neon-blue); margin-top: 6px; font-weight: bold; }
 
-        .footer-panel { position: fixed; bottom: 20px; width: 90%; display: flex; justify-content: center; }
-        #shop-btn {
-            padding: 12px 25px; border-radius: 10px; border: 1px solid var(--neon-pink);
-            background: none; color: var(--neon-pink); font-weight: bold;
+        .tap-anim { position: absolute; color: var(--neon-blue); font-weight: bold; animation: flyUp 0.8s forwards; font-size: 30px; pointer-events: none; z-index: 100; }
+        @keyframes flyUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-130px); } }
+
+        .footer { position: fixed; bottom: 15px; width: 95%; display: flex; gap: 10px; justify-content: center; }
+        .btn-action {
+            flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--neon-pink);
+            background: rgba(255, 0, 85, 0.05); color: var(--neon-pink); font-weight: bold; font-size: 11px;
         }
     </style>
 </head>
@@ -64,34 +76,38 @@
 
     <div class="header">
         <span id="user-name">ZENITH</span>
-        <span style="font-size: 10px; opacity: 0.5;" id="user-id">ID: ---</span>
+        <span style="font-size: 10px; color: #555;" id="user-id">ID: ---</span>
+    </div>
+
+    <div class="league-header">
+        <div id="league-name">BRONZE LEAGUE</div>
+        <div class="level-progress">
+            <div id="level-bar"></div>
+        </div>
     </div>
 
     <div id="score">0</div>
 
     <div id="main-btn">Z</div>
 
-    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-        <div class="energy-container">
-            <div id="energy-bar"></div>
-        </div>
-        <div class="energy-text">⚡ <span id="energy-val">1000</span> / 1000</div>
+    <div class="energy-section">
+        <div class="energy-bg"><div id="energy-bar"></div></div>
+        <div class="energy-info">⚡ <span id="energy-val">1000</span> / 1000</div>
     </div>
 
-    <div class="footer-panel">
-        <button id="shop-btn" onclick="buyAuto()">AUTO-BOT (100 $ZNT)</button>
+    <div class="footer">
+        <button class="btn-action" onclick="buyAuto()">AUTO-BOT (100 $ZNT)</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let balance = parseFloat(localStorage.getItem('z_bal')) || 0;
-        let energy = parseFloat(localStorage.getItem('z_nrgy')) || 1000;
-        let autoRate = parseFloat(localStorage.getItem('z_auto')) || 0;
+        let balance = parseFloat(localStorage.getItem('zen_bal')) || 0;
+        let energy = parseFloat(localStorage.getItem('zen_nrg')) || 1000;
+        let autoRate = parseFloat(localStorage.getItem('zen_auto')) || 0;
         const maxEnergy = 1000;
 
-        // Настройка профиля
         if (tg.initDataUnsafe.user) {
             document.getElementById('user-name').innerText = tg.initDataUnsafe.user.first_name.toUpperCase() + ".APP";
             document.getElementById('user-id').innerText = "ID: " + tg.initDataUnsafe.user.id;
@@ -102,56 +118,63 @@
             document.getElementById('energy-val').innerText = Math.floor(energy);
             document.getElementById('energy-bar').style.width = (energy / maxEnergy * 100) + "%";
             
-            if(energy < 1) {
-                document.getElementById('main-btn').classList.add('disabled');
-            } else {
-                document.getElementById('main-btn').classList.remove('disabled');
+            let league = "BRONZE LEAGUE";
+            let color = "#9d00ff";
+            let progress = (balance / 5000) * 100;
+
+            if (balance >= 5000 && balance < 25000) {
+                league = "SILVER LEAGUE"; color = "#C0C0C0"; progress = ((balance - 5000) / 20000) * 100;
+            } else if (balance >= 25000 && balance < 100000) {
+                league = "GOLD LEAGUE"; color = "#FFD700"; progress = ((balance - 25000) / 75000) * 100;
+            } else if (balance >= 100000 && balance < 500000) {
+                league = "DIAMOND LEAGUE"; color = "#b9f2ff"; progress = ((balance - 100000) / 400000) * 100;
+            } else if (balance >= 500000) {
+                league = "LORD LEAGUE (ВЛАДЫКА)"; color = "#ff3e3e"; progress = 100;
             }
 
-            localStorage.setItem('z_bal', balance);
-            localStorage.setItem('z_nrgy', energy);
-            localStorage.setItem('z_auto', autoRate);
+            const lName = document.getElementById('league-name');
+            lName.innerText = league;
+            lName.style.color = color;
+            lName.style.textShadow = `0 0 10px ${color}`;
+            document.getElementById('level-bar').style.background = color;
+            document.getElementById('level-bar').style.width = Math.min(100, progress) + "%";
+            
+            if(energy < 1) document.getElementById('main-btn').classList.add('disabled');
+            else document.getElementById('main-btn').classList.remove('disabled');
+
+            localStorage.setItem('zen_bal', balance);
+            localStorage.setItem('zen_nrg', energy);
+            localStorage.setItem('zen_auto', autoRate);
         }
 
-        // Клик
         document.getElementById('main-btn').addEventListener('touchstart', (e) => {
             e.preventDefault();
             if (energy >= 1) {
-                balance += 1;
-                energy -= 1;
-                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+                balance += 1; energy -= 1;
+                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
                 showAnim(e.touches[0].clientX, e.touches[0].clientY);
                 updateUI();
             }
         });
 
-        // Регенерация энергии и Авто-бот
         setInterval(() => {
-            if (energy < maxEnergy) energy = Math.min(maxEnergy, energy + 1);
+            if (energy < maxEnergy) energy = Math.min(maxEnergy, energy + 2);
             if (autoRate > 0) balance += autoRate;
             updateUI();
         }, 1000);
 
         function buyAuto() {
-            if (balance >= 100) {
-                balance -= 100;
-                autoRate += 0.5;
-                updateUI();
-            } else {
-                tg.showAlert("Not enough $ZNT!");
-            }
+            if (balance >= 100) { balance -= 100; autoRate += 0.5; updateUI(); }
+            else { tg.showAlert("Need 100 $ZNT!"); }
         }
 
         function showAnim(x, y) {
             const el = document.createElement('div');
-            el.className = 'tap-anim';
-            el.innerText = '+1';
-            el.style.left = x + 'px';
-            el.style.top = y + 'px';
+            el.className = 'tap-anim'; el.innerText = '+1';
+            el.style.left = x + 'px'; el.style.top = (y - 50) + 'px';
             document.body.appendChild(el);
             setTimeout(() => el.remove(), 800);
         }
-
         updateUI();
     </script>
 </body>
