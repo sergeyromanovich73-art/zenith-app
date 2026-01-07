@@ -2,74 +2,124 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --blue: #00f3ff; --bg: #020205; --card: rgba(255,255,255,0.05); }
+        :root { --blue: #00f3ff; --bg: #020205; --card: rgba(255,255,255,0.07); }
         body { 
             background: var(--bg); color: white; font-family: sans-serif; 
-            display: flex; flex-direction: column; align-items: center; 
-            height: 100vh; margin: 0; overflow: hidden; justify-content: space-between; 
-            padding: 40px 0 90px 0; box-sizing: border-box; 
+            margin: 0; display: flex; flex-direction: column; align-items: center; 
+            height: 100vh; overflow: hidden; justify-content: space-between; 
+            padding: 20px 0 90px 0; box-sizing: border-box; 
         }
 
-        /* Счет */
-        #score { font-size: 60px; font-weight: 900; text-shadow: 0 0 20px var(--blue); }
+        /* Верхняя часть (без лишних рамок, чтобы не мешать) */
+        .header-simple { text-align: center; pointer-events: none; width: 100%; }
+        .supply-mini { color: #ff4545; font-size: 11px; opacity: 0.8; letter-spacing: 1px; }
 
-        /* ГЛАВНАЯ КНОПКА (Как в самой первой версии) */
+        /* Счет */
+        #score { font-size: 64px; font-weight: 900; text-shadow: 0 0 20px var(--blue); margin: 10px 0; }
+
+        /* ГЛАВНАЯ КНОПКА (Оставляем как есть, она работает!) */
         #main-btn { 
-            width: 240px; height: 240px; border-radius: 50%; 
+            width: 250px; height: 250px; border-radius: 50%; 
             background: radial-gradient(circle, var(--blue) 0%, transparent 70%); 
             border: 4px solid var(--blue); display: flex; align-items: center; 
-            justify-content: center; font-size: 110px; touch-action: manipulation; 
+            justify-content: center; font-size: 120px; touch-action: manipulation; 
             transition: transform 0.05s; -webkit-tap-highlight-color: transparent;
-            outline: none; z-index: 5;
+            outline: none; z-index: 5; color: white; font-weight: 900;
         }
         #main-btn:active { transform: scale(0.92); }
 
         /* Энергия */
-        .energy-box { width: 85%; text-align: center; }
-        .en-bar { width: 100%; height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; }
-        #en-fill { width: 100%; height: 100%; background: var(--blue); }
+        .energy-section { width: 85%; text-align: center; }
+        .en-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+        #en-fill { width: 100%; height: 100%; background: var(--blue); transition: 0.2s; }
 
-        /* Меню (Оверлеи) */
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 2, 5, 0.98); z-index: 100; display: none; flex-direction: column; align-items: center; padding-top: 50px; }
-        .card { background: var(--card); border: 1px solid rgba(0,243,255,0.2); width: 90%; padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .btn-act { background: var(--blue); color: #000; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; }
+        /* Экраны (Оверлеи) */
+        .overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: var(--bg); z-index: 100; display: none; 
+            flex-direction: column; align-items: center; padding: 40px 20px; box-sizing: border-box;
+        }
+        .overlay h2 { color: var(--blue); letter-spacing: 2px; margin-bottom: 30px; }
+        .card { 
+            background: var(--card); border: 1px solid rgba(0,243,255,0.2); 
+            width: 100%; padding: 20px; border-radius: 15px; margin-bottom: 15px; 
+            display: flex; justify-content: space-between; align-items: center; box-sizing: border-box;
+        }
+        .card-info span { display: block; font-size: 14px; }
+        .card-info small { color: #888; font-size: 11px; }
+        .btn-buy { background: var(--blue); color: #000; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; }
 
         /* Навигация */
-        .nav { position: fixed; bottom: 0; width: 100%; height: 80px; display: flex; background: #0a0a0f; border-top: 1px solid rgba(0,243,255,0.3); z-index: 200; }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: #555; background: none; border: none; outline: none; }
+        .nav { 
+            position: fixed; bottom: 0; width: 100%; height: 80px; 
+            display: flex; background: #0a0a0f; border-top: 1px solid rgba(0,243,255,0.2); z-index: 200; 
+        }
+        .nav-item { 
+            flex: 1; display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; font-size: 10px; color: #555; background: none; border: none; outline: none; 
+        }
         .nav-item.active { color: var(--blue); }
+        .nav-item span { font-size: 20px; margin-bottom: 4px; }
     </style>
 </head>
 <body>
+
+    <div class="header-simple">
+        <div class="supply-mini">SUPPLY: <span id="s-val">1,000,000,000</span> $ZNT</div>
+    </div>
 
     <div id="score">0</div>
 
     <button id="main-btn">Z</button>
 
-    <div class="energy-box">
+    <div class="energy-section">
         <div class="en-bar"><div id="en-fill"></div></div>
-        <div style="margin-top:8px; font-size:14px;">⚡ <span id="en-val">1000</span> / 1000</div>
+        <div style="margin-top:10px; font-size:14px; font-weight:bold;">⚡ <span id="en-val">1000</span> / 1000</div>
     </div>
 
-    <div id="shop-ui" class="overlay">
-        <h2 style="color:var(--blue)">BOOSTS</h2>
-        <div class="card"><div>Multi-tap</div><button class="btn-act" onclick="buy('pow')">UPGRADE</button></div>
-        <button onclick="closeAll()" style="color:red; background:none; border:none; margin-top:20px;">ЗАКРЫТЬ</button>
+    <div id="ui-boosts" class="overlay">
+        <h2>BOOSTS</h2>
+        <div class="card">
+            <div class="card-info">
+                <span>Multi-Tap</span>
+                <small>+1 к клику за уровень</small>
+            </div>
+            <button class="btn-buy" onclick="buyUpgrade()">500 💰</button>
+        </div>
+        <button onclick="closeUI()" style="margin-top:auto; color:#555; background:none; border:none;">ВЕРНУТЬСЯ В МАЙНИНГ</button>
     </div>
 
-    <div id="tasks-ui" class="overlay">
-        <h2 style="color:var(--blue)">TASKS</h2>
-        <div class="card"><div>Zenith Forum</div><button class="btn-act" onclick="tg.openTelegramLink('https://t.me/zenith_forum')">GO</button></div>
-        <button onclick="closeAll()" style="color:red; background:none; border:none; margin-top:20px;">ЗАКРЫТЬ</button>
+    <div id="ui-tasks" class="overlay">
+        <h2>TASKS</h2>
+        <div class="card">
+            <div class="card-info">
+                <span>Join Zenith Forum</span>
+                <small>+1000 $ZNT</small>
+            </div>
+            <button class="btn-buy" onclick="tg.openTelegramLink('https://t.me/zenith_forum')">GO</button>
+        </div>
+        <button onclick="closeUI()" style="margin-top:auto; color:#555; background:none; border:none;">ВЕРНУТЬСЯ В МАЙНИНГ</button>
+    </div>
+
+    <div id="ui-friends" class="overlay">
+        <h2>FRIENDS</h2>
+        <div class="card" style="justify-content:center; text-align:center;">
+            <div>
+                <p>Приглашай друзей и получай<br><b style="color:var(--blue)">10% от их добычи!</b></p>
+                <button class="btn-buy" style="width:100%" onclick="tg.openTelegramLink('https://t.me/share/url?url=t.me/ТВОЙ_БОТ')">ПРИГЛАСИТЬ</button>
+            </div>
+        </div>
+        <button onclick="closeUI()" style="margin-top:auto; color:#555; background:none; border:none;">ВЕРНУТЬСЯ В МАЙНИНГ</button>
     </div>
 
     <div class="nav">
-        <button class="nav-item active" onclick="closeAll()">💰<br>MINE</button>
-        <button class="nav-item" onclick="openUI('shop-ui')">🚀<br>BOOSTS</button>
-        <button class="nav-item" onclick="openUI('tasks-ui')">📋<br>TASKS</button>
+        <button id="nav-mine" class="nav-item active" onclick="closeUI()"><span>💰</span>MINE</button>
+        <button id="nav-boosts" class="nav-item" onclick="openUI('ui-boosts', 'nav-boosts')"><span>🚀</span>BOOSTS</button>
+        <button id="nav-tasks" class="nav-item" onclick="openUI('ui-tasks', 'nav-tasks')"><span>📋</span>TASKS</button>
+        <button id="nav-friends" class="nav-item" onclick="openUI('ui-friends', 'nav-friends')"><span>👥</span>FRIENDS</button>
     </div>
 
     <script>
@@ -77,46 +127,59 @@
         tg.expand();
 
         let bal = parseFloat(localStorage.getItem('zen_bal')) || 0;
-        let en = 1000;
-        let pow = 1;
+        let en = parseInt(localStorage.getItem('zen_en')) || 1000;
+        let power = parseInt(localStorage.getItem('zen_pow')) || 1;
 
         function refresh() {
             document.getElementById('score').innerText = Math.floor(bal).toLocaleString();
             document.getElementById('en-val').innerText = en;
             document.getElementById('en-fill').style.width = (en/10) + "%";
+            document.getElementById('s-val').innerText = (1000000000 - Math.floor(bal)).toLocaleString();
+            
             localStorage.setItem('zen_bal', bal);
+            localStorage.setItem('zen_en', en);
+            localStorage.setItem('zen_pow', power);
         }
 
-        function openUI(id) {
+        function openUI(uiId, navId) {
             document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
-            document.getElementById(id).style.display = 'flex';
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(uiId).style.display = 'flex';
+            document.getElementById(navId).classList.add('active');
         }
 
-        function closeAll() {
+        function closeUI() {
             document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('nav-mine').classList.add('active');
         }
 
-        function buy(type) {
+        function buyUpgrade() {
             if(bal >= 500) {
                 bal -= 500;
-                pow++;
-                tg.showAlert("Улучшено!");
+                power += 1;
+                tg.HapticFeedback.notificationOccurred('success');
+                tg.showAlert('Мощность клика увеличена!');
                 refresh();
+            } else {
+                tg.showAlert('Недостаточно монет!');
             }
         }
 
-        // ТОТ САМЫЙ РАБОЧИЙ КЛИК
+        // КЛИК
         document.getElementById('main-btn').addEventListener('touchstart', (e) => {
             e.preventDefault();
-            if(en >= pow) {
-                bal += pow;
-                en -= pow;
+            if(en >= power) {
+                bal += power;
+                en -= power;
                 tg.HapticFeedback.impactOccurred('medium');
                 refresh();
             }
         });
 
-        setInterval(() => { if(en < 1000) { en++; refresh(); } }, 1500);
+        // Реген энергии (1 в сек)
+        setInterval(() => { if(en < 1000) { en++; refresh(); } }, 1000);
+
         refresh();
     </script>
 </body>
