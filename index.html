@@ -34,12 +34,13 @@
         .energy-box { width: 80%; display: flex; flex-direction: column; align-items: center; }
         .energy-bar-bg { width: 100%; height: 12px; background: var(--glass); border-radius: 20px; border: 1px solid rgba(0,243,255,0.2); overflow: hidden; }
         #energy-fill { width: 100%; height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)); transition: 0.2s; }
+        
         .bottom-nav {
             position: fixed; bottom: 0; width: 100%; height: 80px;
             background: rgba(10, 10, 15, 0.95); display: flex; justify-content: space-around;
             align-items: center; border-top: 1px solid var(--neon-blue); padding-bottom: 10px;
         }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 11px; border: none; background: none; width: 33%; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 11px; border: none; background: none; width: 33%; cursor: pointer; }
         .nav-item.active { color: var(--neon-blue); }
         .tap-anim { position: absolute; color: var(--neon-blue); font-weight: bold; animation: fly 0.7s forwards; pointer-events: none; font-size: 32px; z-index: 100; }
         @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
@@ -61,20 +62,22 @@
         <div style="margin-top: 8px; font-size: 14px;">⚡ <span id="e-val">1000</span> / <span id="e-max">1000</span></div>
     </div>
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="location.reload()"><span style="font-size:24px">💰</span><span>MINE</span></div>
-        <div class="nav-item" onclick="openStore()"><span style="font-size:24px">🚀</span><span>BOOSTS</span></div>
-        <div class="nav-item" onclick="window.Telegram.WebApp.showAlert('Stats coming soon!')"><span style="font-size:24px">📊</span><span>STATS</span></div>
+        <div class="nav-item active" id="btn-mine"><span style="font-size:24px">💰</span><span>MINE</span></div>
+        <div class="nav-item" id="btn-boosts"><span style="font-size:24px">🚀</span><span>BOOSTS</span></div>
+        <div class="nav-item" id="btn-stats"><span style="font-size:24px">📊</span><span>STATS</span></div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
+        tg.ready();
 
-        let balance = parseFloat(localStorage.getItem('z2_bal')) || 0;
-        let energy = parseFloat(localStorage.getItem('z2_en')) || 1000;
-        let maxEnergy = parseFloat(localStorage.getItem('z2_m_en')) || 1000;
-        let tapPower = parseFloat(localStorage.getItem('z2_pow')) || 1;
-        let autoRate = parseFloat(localStorage.getItem('z2_auto')) || 0;
+        // Используем новый ключ z3 для очистки старых багов
+        let balance = parseFloat(localStorage.getItem('z3_bal')) || 0;
+        let energy = parseFloat(localStorage.getItem('z3_en')) || 1000;
+        let maxEnergy = parseFloat(localStorage.getItem('z3_m_en')) || 1000;
+        let tapPower = parseFloat(localStorage.getItem('z3_pow')) || 1;
+        let autoRate = parseFloat(localStorage.getItem('z3_auto')) || 0;
 
         if (tg.initDataUnsafe.user) {
             document.getElementById('user-name').innerText = tg.initDataUnsafe.user.first_name.toUpperCase() + ".APP";
@@ -98,13 +101,14 @@
             document.getElementById('level-bar-fill').style.background = c;
             document.getElementById('level-bar-fill').style.width = Math.min(100, p) + "%";
 
-            localStorage.setItem('z2_bal', balance);
-            localStorage.setItem('z2_en', energy);
-            localStorage.setItem('z2_m_en', maxEnergy);
-            localStorage.setItem('z2_pow', tapPower);
-            localStorage.setItem('z2_auto', autoRate);
+            localStorage.setItem('z3_bal', balance);
+            localStorage.setItem('z3_en', energy);
+            localStorage.setItem('z3_m_en', maxEnergy);
+            localStorage.setItem('z3_pow', tapPower);
+            localStorage.setItem('z3_auto', autoRate);
         }
 
+        // Клик по главной кнопке
         document.getElementById('main-btn').addEventListener('touchstart', (e) => {
             e.preventDefault();
             if(energy >= tapPower) {
@@ -115,30 +119,39 @@
             }
         });
 
+        // Навешиваем событие на кнопку Boosts через JavaScript (надежнее)
+        document.getElementById('btn-boosts').addEventListener('click', () => {
+            tg.showPopup({
+                title: 'ZENITH STORE',
+                message: `Balance: ${Math.floor(balance)} $ZNT\nPower: ${tapPower}\nMax Energy: ${maxEnergy}`,
+                buttons: [
+                    {id: 'p', type: 'default', text: 'Multi-tap (500)'},
+                    {id: 'e', type: 'default', text: 'Max Energy (500)'},
+                    {id: 'a', type: 'default', text: 'Auto-Bot (1000)'},
+                    {type: 'cancel', text: 'Close'}
+                ]
+            }, (btn) => {
+                if(btn === 'p' && balance >= 500) { balance -= 500; tapPower += 1; tg.showAlert('Upgraded!'); }
+                else if(btn === 'e' && balance >= 500) { balance -= 500; maxEnergy += 500; energy = maxEnergy; tg.showAlert('Increased!'); }
+                else if(btn === 'a' && balance >= 1000) { balance -= 1000; autoRate += 1; tg.showAlert('Bot Active!'); }
+                else if(btn) { tg.showAlert('Not enough $ZNT!'); }
+                updateUI();
+            });
+        });
+
+        document.getElementById('btn-stats').addEventListener('click', () => {
+            tg.showAlert('Stats coming soon!');
+        });
+
+        document.getElementById('btn-mine').addEventListener('click', () => {
+            location.reload();
+        });
+
         setInterval(() => {
             if(energy < maxEnergy) energy = Math.min(maxEnergy, energy + 2);
             if(autoRate > 0) balance += autoRate;
             updateUI();
         }, 1000);
-
-        function openStore() {
-            tg.showPopup({
-                title: 'ZENITH STORE',
-                message: `Your Balance: ${Math.floor(balance)} $ZNT`,
-                buttons: [
-                    {id: 'p', type: 'default', text: `Multi-tap (500)`},
-                    {id: 'e', type: 'default', text: `Max Energy (500)`},
-                    {id: 'a', type: 'default', text: `Auto-Bot (1000)`},
-                    {type: 'cancel', text: 'Close'}
-                ]
-            }, (btn) => {
-                if(btn === 'p' && balance >= 500) { balance -= 500; tapPower += 1; tg.showAlert('Power Upgraded!'); }
-                else if(btn === 'e' && balance >= 500) { balance -= 500; maxEnergy += 500; energy = maxEnergy; tg.showAlert('Energy Increased!'); }
-                else if(btn === 'a' && balance >= 1000) { balance -= 1000; autoRate += 1; tg.showAlert('Bot Started!'); }
-                else if(btn) { tg.showAlert('Need more $ZNT!'); }
-                updateUI();
-            });
-        }
 
         function showAnim(x, y) {
             const el = document.createElement('div');
